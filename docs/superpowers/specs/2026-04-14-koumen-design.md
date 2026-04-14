@@ -75,7 +75,8 @@ users (id UUID, phone VARCHAR UNIQUE, wechat_openid VARCHAR UNIQUE NULL,
 ### 3.2 ChallengeModule（AI 核心）
 
 **输入：** 自然语言文本（"今晚烧烤，预算30，2人"）  
-**处理：** NLP 提取 → 城市/品类匹配 → 注入 Top15 店铺上下文 → AI 生成
+**城市来源：** 优先取用户 Profile 中已设置的城市；未设置时，从前端 Geolocation API 反查城区，或提示用户选择  
+**处理：** 原始文本直接进入 AI Prompt（AI 自行提取预算/人数/活动/时间意图）→ 结合用户城市匹配 Top15 店铺 → 注入上下文 → 生成结构化任务
 
 **AI Provider 策略模式：**
 ```typescript
