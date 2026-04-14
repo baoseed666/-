@@ -4,5 +4,9 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true
+  },
+  "projects": {
+    "app": { "type": "application", "root": ".", "entryFile": "main", "sourceRoot": "src" },
+    "scraper": { "type": "application", "root": ".", "entryFile": "scraper/main", "sourceRoot": "." }
   }
 }
