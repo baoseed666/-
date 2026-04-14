@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-arcade-black text-white font-mono overflow-x-hidden;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none; z-index: 9999;
+  }
+}
+
+@layer components {
+  .btn-arcade {
+    @apply px-6 py-3 border border-arcade-gold text-arcade-gold font-mono font-bold
+           tracking-widest uppercase transition-all duration-200
+           hover:bg-arcade-gold hover:text-arcade-black hover:shadow-neon
+           active:scale-95;
+  }
+
+  .card-arcade {
+    @apply bg-arcade-dim border border-arcade-border rounded p-4;
+  }
+
+  .task-badge-main  { @apply border-l-4 border-arcade-green; }
+  .task-badge-side  { @apply border-l-4 border-arcade-gold; }
+  .task-badge-hidden { @apply border-l-4 border-arcade-blue; }
+
+  .hp-bar { @apply h-2 bg-arcade-red rounded-full transition-all duration-500; }
+  .mp-bar { @apply h-2 bg-arcade-blue rounded-full transition-all duration-500; }
+}
