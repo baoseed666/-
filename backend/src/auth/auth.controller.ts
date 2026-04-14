@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { SmsSendDto } from './dto/sms-send.dto';
 import { SmsVerifyDto } from './dto/sms-verify.dto';
 import { WechatCallbackDto } from './dto/wechat-callback.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -26,7 +27,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(200)
-  refresh(@Body('refreshToken') token: string) {
-    return this.auth.refresh(token);
+  refresh(@Body() dto: RefreshTokenDto) {
+    return this.auth.refresh(dto.refreshToken);
   }
 }

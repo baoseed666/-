@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -65,7 +65,7 @@ export class AuthService {
   }
 
   private async dispatchSms(_phone: string, _otp: string): Promise<void> {
-    throw new Error('SMS provider not configured');
+    throw new InternalServerErrorException('SMS provider not configured');
   }
 
   private async exchangeWechatCode(code: string) {
