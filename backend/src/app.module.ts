@@ -10,6 +10,7 @@ import { ShopsModule } from './shops/shops.module';
 import { ChallengesModule } from './challenges/challenges.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { BattleReportsModule } from './battle-reports/battle-reports.module';
+import { LbsModule } from './lbs/lbs.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { BattleReportsModule } from './battle-reports/battle-reports.module';
     ChallengesModule,
     LeaderboardModule,
     BattleReportsModule,
+    LbsModule,
   ],
 })
 export class AppModule {}
