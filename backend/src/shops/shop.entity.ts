@@ -37,7 +37,7 @@ export class Shop {
   @Column({ name: 'open_hours', type: 'jsonb', default: '{}' })
   openHours: Record<string, unknown>;
 
-  @Column({ name: 'external_id', type: 'varchar', nullable: true })
+  @Column({ name: 'external_id', type: 'varchar', nullable: true, unique: true })
   externalId: string | null;
 
   @UpdateDateColumn({ name: 'scraped_at' })
