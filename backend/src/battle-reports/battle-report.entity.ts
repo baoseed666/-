@@ -19,7 +19,7 @@ export class BattleReport {
   @Column({ type: 'int', default: 0 })
   percentile: number;
 
-  @Column({ name: 'image_url', nullable: true })
+  @Column({ name: 'image_url', type: 'varchar', nullable: true })
   imageUrl: string | null;
 
   @CreateDateColumn({ name: 'created_at' })

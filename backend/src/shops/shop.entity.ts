@@ -16,7 +16,7 @@ export class Shop {
   @Column()
   city: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   district: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 7, default: 0 })
@@ -37,7 +37,7 @@ export class Shop {
   @Column({ name: 'open_hours', type: 'jsonb', default: '{}' })
   openHours: Record<string, unknown>;
 
-  @Column({ name: 'external_id', nullable: true })
+  @Column({ name: 'external_id', type: 'varchar', nullable: true })
   externalId: string | null;
 
   @UpdateDateColumn({ name: 'scraped_at' })

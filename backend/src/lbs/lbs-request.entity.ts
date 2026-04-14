@@ -29,7 +29,7 @@ export class LbsRequest {
   @Column({ type: 'enum', enum: LbsStatus, default: LbsStatus.WAITING })
   status: LbsStatus;
 
-  @Column({ name: 'matched_user_id', nullable: true })
+  @Column({ name: 'matched_user_id', type: 'varchar', nullable: true })
   matchedUserId: string | null;
 
   @Column({ name: 'expires_at' })

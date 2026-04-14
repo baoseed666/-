@@ -6,16 +6,16 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ type: 'varchar', unique: true, nullable: true })
   phone: string | null;
 
-  @Column({ name: 'wechat_openid', unique: true, nullable: true })
+  @Column({ name: 'wechat_openid', type: 'varchar', unique: true, nullable: true })
   wechatOpenid: string | null;
 
-  @Column({ default: '匿名抠门人' })
+  @Column({ type: 'varchar', default: '匿名抠门人' })
   nickname: string;
 
-  @Column({ name: 'avatar_url', nullable: true })
+  @Column({ name: 'avatar_url', type: 'varchar', nullable: true })
   avatarUrl: string | null;
 
   @Column({ name: 'total_saved', type: 'decimal', precision: 10, scale: 2, default: 0 })
