@@ -46,7 +46,7 @@
 | 层 | 技术 |
 |---|---|
 | 前端 | Vue3 + Vite + TypeScript + TailwindCSS + Pinia + Vue Router |
-| 3D/动效 | Three.js (WebGL) + GSAP ScrollTrigger + Blender 导出模型 |
+| 3D/动效 | Three.js (WebGL) 浏览器内渲染 + GSAP ScrollTrigger + Blender 建模导出 glTF/GLB |
 | 后端 | NestJS + TypeORM + PostgreSQL + Redis |
 | 爬虫 | Puppeteer + puppeteer-extra-plugin-stealth + Bull |
 | AI | DeepSeek-V3（主）→ Claude claude-sonnet-4-6（兜底） |
