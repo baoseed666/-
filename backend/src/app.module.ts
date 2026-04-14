@@ -9,6 +9,7 @@ import { AdminModule } from './admin/admin.module';
 import { ShopsModule } from './shops/shops.module';
 import { ChallengesModule } from './challenges/challenges.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { BattleReportsModule } from './battle-reports/battle-reports.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
     ShopsModule,
     ChallengesModule,
     LeaderboardModule,
+    BattleReportsModule,
   ],
 })
 export class AppModule {}
