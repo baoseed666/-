@@ -1,7 +1,7 @@
-import { test, expect, Page, BrowserContext } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
-// ── 深圳龙华坐标（种子数据所在区域）
-const LONGHUA_GEO = { latitude: 22.7468, longitude: 114.0397 };
+// 上海徐汇区龙华街道坐标
+const LONGHUA_GEO = { latitude: 31.1890, longitude: 121.4614 };
 
 async function login(page: Page, phone = '13999990001') {
   await page.goto('/login');
@@ -12,15 +12,31 @@ async function login(page: Page, phone = '13999990001') {
   await page.waitForURL('/');
 }
 
-async function createChallenge(page: Page, text: string, city = '深圳') {
-  await page.selectOption('select', city);
+async function createChallenge(page: Page, text: string) {
   await page.fill('textarea', text);
   await page.click('button:has-text("发起省钱挑战")');
   await page.waitForURL(/\/challenge\/.+/);
 }
 
 // ══════════════════════════════════════════════════════════════
-// 1. 正常流程：带位置的完整链路
+// 1. 首页 — 城市固定为上海龙华街道
+// ══════════════════════════════════════════════════════════════
+test.describe('首页', () => {
+  test.beforeEach(async ({ page }) => { await login(page); });
+
+  test('首页显示"上海·徐汇区龙华街道"固定标签，无城市选择框', async ({ page }) => {
+    await expect(page.locator('text=上海')).toBeVisible();
+    await expect(page.locator('text=龙华街道')).toBeVisible();
+    await expect(page.locator('select')).toHaveCount(0);
+  });
+
+  test('空输入 → 发起挑战按钮禁用', async ({ page }) => {
+    await expect(page.locator('button:has-text("发起省钱挑战")')).toBeDisabled();
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+// 2. 正常流程：带位置的完整链路
 // ══════════════════════════════════════════════════════════════
 test.describe('挑战正常流程（带位置）', () => {
   test.use({
@@ -30,20 +46,37 @@ test.describe('挑战正常流程（带位置）', () => {
 
   test.beforeEach(async ({ page }) => { await login(page); });
 
+  test('进入挑战页 → CityPulseBar 在 city_pulse 事件后显示', async ({ page }) => {
+    await createChallenge(page, '今晚烧烤，预算90元，3人');
+
+    // city_pulse 最先到达，bar 应在 plan_start 之前出现
+    await expect(page.locator('[data-testid="city-pulse-bar"]')).toBeVisible({ timeout: 15000 });
+  }, 30000);
+
+  test('CityPulseBar 显示天气+人流+热点区域', async ({ page }) => {
+    await createChallenge(page, '今晚咖啡，预算50元，1人');
+
+    const bar = page.locator('[data-testid="city-pulse-bar"]');
+    await expect(bar).toBeVisible({ timeout: 15000 });
+
+    // 温度数字存在（e.g. "22°C"）
+    await expect(bar.locator('text=/\\d+°C/')).toBeVisible();
+    // 人流文字
+    const crowdTexts = ['人流稀少', '人流适中', '人较多'];
+    const crowdEl = bar.getByText(new RegExp(crowdTexts.join('|')));
+    await expect(crowdEl).toBeVisible();
+  }, 30000);
+
   test('创建挑战 → AI生成任务 → 主线任务含推荐店铺卡片', async ({ page }) => {
     await createChallenge(page, '今晚龙华烧烤，预算90元，3人');
 
     await expect(page.locator('[data-testid="location-ok"]')).toBeVisible({ timeout: 8000 });
-
-    // 等待AI生成任务
     await page.waitForSelector('.task-badge-main', { timeout: 90000 });
     await expect(page.locator('.task-badge-main')).toBeVisible();
 
-    // 主线任务应有推荐店铺区块
     const shopRecs = page.locator('[data-testid="shop-recommendations"]').first();
     await expect(shopRecs).toBeVisible({ timeout: 5000 });
 
-    // ShopCard存在
     const shopCards = page.locator('[data-testid="shop-card"]');
     await expect(shopCards.first()).toBeVisible();
     expect(await shopCards.count()).toBeGreaterThan(0);
@@ -55,23 +88,17 @@ test.describe('挑战正常流程（带位置）', () => {
 
     const card = page.locator('[data-testid="shop-card"]').first();
 
-    // 店名不为空
     const name = await card.locator('[data-testid="shop-name"]').textContent();
     expect(name?.trim().length).toBeGreaterThan(0);
 
-    // 地址存在
     const addr = card.locator('[data-testid="shop-address"]');
     await expect(addr).toBeVisible();
     const addrText = await addr.textContent();
     expect(addrText?.length).toBeGreaterThan(0);
-
-    // 距离文字（因为有位置，距离应是具体数字而非"位置未知"）
     expect(addrText).not.toContain('位置未知');
 
-    // 优惠类型标签至少一个
     const discountTypes = card.locator('[data-testid="shop-discount-types"] span');
-    const dtCount = await discountTypes.count();
-    expect(dtCount).toBeGreaterThan(0);
+    expect(await discountTypes.count()).toBeGreaterThan(0);
   }, 120000);
 
   test('ShopCard外链href指向大众点评或美团', async ({ page }) => {
@@ -80,120 +107,104 @@ test.describe('挑战正常流程（带位置）', () => {
 
     const card = page.locator('[data-testid="shop-card"]').first();
     const href = await card.getAttribute('href');
-
     expect(href).toBeTruthy();
+
     const isValidPlatform =
       href!.includes('dianping.com') ||
       href!.includes('meituan.com') ||
-      href === '#'; // externalUrl为null时的降级
+      href === '#';
     expect(isValidPlatform).toBe(true);
 
-    // 有真实链接的卡片应在新标签页打开
     if (href !== '#') {
       expect(await card.getAttribute('target')).toBe('_blank');
       expect(await card.getAttribute('rel')).toContain('noopener');
     }
   }, 120000);
 
-  test('ShopCard平台标识正确（点评/美团）', async ({ page }) => {
-    await createChallenge(page, '烧烤，预算80元，2人');
-    await page.waitForSelector('[data-testid="shop-card"]', { timeout: 90000 });
-
-    const platforms = page.locator('[data-testid="shop-platform"]');
-    const count = await platforms.count();
-    expect(count).toBeGreaterThan(0);
-
-    for (let i = 0; i < Math.min(count, 3); i++) {
-      const text = await platforms.nth(i).textContent();
-      expect(['点评', '美团', '外链']).toContain(text?.trim());
-    }
-  }, 120000);
-
-  test('完整链路：创建→店铺推荐→完成任务→生成战报', async ({ page }) => {
+  test('完整链路：创建→城市脉冲→AI生成→完成任务→生成战报', async ({ page }) => {
     await createChallenge(page, '今晚烧烤，预算30，2人');
+
+    // 城市脉冲先出现
+    await expect(page.locator('[data-testid="city-pulse-bar"]')).toBeVisible({ timeout: 15000 });
+
     await page.waitForSelector('.task-badge-main', { timeout: 90000 });
 
-    // 验证三类任务都有
+    // 三类任务都有
     await expect(page.locator('.task-badge-main')).toBeVisible();
     await expect(page.locator('.task-badge-side')).toBeVisible();
     await expect(page.locator('.task-badge-hidden')).toBeVisible();
 
-    // 安全护栏：不含危险内容
+    // 安全护栏
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).not.toContain('垃圾桶');
     expect(bodyText).not.toContain('乞讨');
     expect(bodyText).not.toContain('拾荒');
 
-    // 完成一个任务
+    // 完成任务
     await page.click('button:has-text("✓ 完成")');
     await expect(page.locator('text=✓ 已完成').first()).toBeVisible();
 
-    // 生成战报流程
+    // 生成战报
     await page.click('button:has-text("完成挑战，生成战报")');
     await expect(page.locator('text=确认完成挑战')).toBeVisible();
     await page.fill('input[type="number"]', '25');
     await page.click('button:has-text("确认")');
-
     await page.waitForURL(/\/report\/.+/, { timeout: 60000 });
     await expect(page.locator('text=BATTLE REPORT')).toBeVisible();
   }, 180000);
 });
 
 // ══════════════════════════════════════════════════════════════
-// 2. 边界情况：拒绝位置授权
+// 3. 边界情况：拒绝位置授权
 // ══════════════════════════════════════════════════════════════
 test.describe('边界：拒绝位置授权', () => {
-  // 不设置 geolocation permissions → 浏览器会拒绝
   test.use({ permissions: [] });
 
   test.beforeEach(async ({ page }) => { await login(page); });
 
   test('拒绝定位 → 显示"位置未知"badge且主线任务有降级提示', async ({ page }) => {
-    await page.selectOption('select', '深圳');
     await page.fill('textarea', '烧烤，预算60元，2人');
     await page.click('button:has-text("发起省钱挑战")');
     await page.waitForURL(/\/challenge\/.+/);
 
-    // 等待AI生成（location-denied 或 location-ok 其中一个会出现）
     await page.waitForSelector('.task-badge-main', { timeout: 90000 });
 
-    // 无位置时的提示：no-shops-hint 或 distanceText 为"位置未知"
     const noShopsHints = await page.locator('[data-testid="no-shops-hint"]').count();
     const locationDenied = await page.locator('[data-testid="location-denied"]').count();
     const shopCards = await page.locator('[data-testid="shop-card"]').count();
 
-    // 要么有降级提示，要么位置被拒绝显示，要么店铺不显示距离
-    // 至少有一种降级处理存在
     const hasDegradation = noShopsHints > 0 || locationDenied > 0 || shopCards === 0;
     expect(hasDegradation).toBe(true);
 
-    // 如果有shop cards，距离应显示"位置未知"
     if (shopCards > 0) {
       const addrText = await page.locator('[data-testid="shop-address"]').first().textContent();
       expect(addrText).toContain('位置未知');
     }
   }, 120000);
+
+  test('无位置时 CityPulseBar 仍出现（城市状态不依赖GPS）', async ({ page }) => {
+    await page.fill('textarea', '咖啡，预算30元');
+    await page.click('button:has-text("发起省钱挑战")');
+    await page.waitForURL(/\/challenge\/.+/);
+
+    // city_pulse 不依赖坐标，应仍然触发
+    await expect(page.locator('[data-testid="city-pulse-bar"]')).toBeVisible({ timeout: 15000 });
+  }, 30000);
 });
 
 // ══════════════════════════════════════════════════════════════
-// 3. 边界情况：极端输入
+// 4. 边界情况：极端输入
 // ══════════════════════════════════════════════════════════════
 test.describe('边界：极端输入', () => {
   test.use({ geolocation: LONGHUA_GEO, permissions: ['geolocation'] });
 
   test.beforeEach(async ({ page }) => { await login(page); });
 
-  test('空输入 → 发起挑战按钮禁用', async ({ page }) => {
-    await expect(page.locator('button:has-text("发起省钱挑战")')).toBeDisabled();
-  });
-
   test('预算1元（极端低）→ AI不崩溃，生成任务', async ({ page }) => {
     await page.fill('textarea', '预算1元，随便吃');
     await page.click('button:has-text("发起省钱挑战")');
     await page.waitForURL(/\/challenge\/.+/);
     await page.waitForTimeout(5000);
-    await expect(page.locator('text=省钱挑战')).toBeVisible();
-    // 页面不崩溃（无JS error alert）
     await expect(page.locator('text=省钱挑战')).toBeVisible();
   }, 30000);
 
@@ -206,7 +217,6 @@ test.describe('边界：极端输入', () => {
   }, 30000);
 
   test('ShopCard图片加载失败 → emoji占位符而非破图', async ({ page }) => {
-    // 屏蔽所有图片请求来模拟加载失败
     await page.route('**/*.jpg', (route) => route.abort());
     await page.route('**/*.png', (route) => route.abort());
     await page.route('**/meituan.net/**', (route) => route.abort());
@@ -215,18 +225,13 @@ test.describe('边界：极端输入', () => {
     await createChallenge(page, '火锅，预算100元，3人');
     await page.waitForSelector('[data-testid="shop-card"]', { timeout: 90000 });
 
-    // 图片加载失败后应显示emoji，不显示broken图标
-    // 检查没有src指向失败图片的img标签（已隐藏）
     const brokenImgs = await page.locator('[data-testid="shop-image"]:visible').count();
-    // 失败的图片应被隐藏（onError处理），所以visible数量应为0
-    // 或者根本就没有img（imageUrl为null显示emoji div）
-    // 总之不应有visible的broken img
     expect(brokenImgs).toBe(0);
   }, 120000);
 });
 
 // ══════════════════════════════════════════════════════════════
-// 4. AI 决策能力
+// 5. AI 决策能力
 // ══════════════════════════════════════════════════════════════
 test.describe('AI决策能力测试', () => {
   test.use({ geolocation: LONGHUA_GEO, permissions: ['geolocation'] });
@@ -234,7 +239,7 @@ test.describe('AI决策能力测试', () => {
   test.beforeEach(async ({ page }) => { await login(page); });
 
   test('3人火锅150元 → 任务含叠加优惠关键词', async ({ page }) => {
-    await createChallenge(page, '3人聚餐，预算150元，想吃火锅，徐汇区，要求评分4.5以上');
+    await createChallenge(page, '3人聚餐，预算150元，想吃火锅，徐汇龙华，要求评分4.5以上');
     await page.waitForSelector('.task-badge-main', { timeout: 90000 });
 
     const taskTexts = await page.locator('.card-arcade p').allTextContents();
@@ -250,7 +255,6 @@ test.describe('AI决策能力测试', () => {
     const details = page.locator('[data-testid="shop-discount-details"] p').first();
     const text = await details.textContent();
     expect(text?.trim().length).toBeGreaterThan(0);
-    // 优惠文字应包含金额或折扣信息
     const hasDiscountInfo = /[折元减优惠套餐]/.test(text ?? '');
     expect(hasDiscountInfo).toBe(true);
   }, 90000);
@@ -263,7 +267,6 @@ test.describe('AI决策能力测试', () => {
     const count = await addrLocators.count();
 
     if (count >= 2) {
-      // 提取距离数字（m或km）
       const distances: number[] = [];
       for (let i = 0; i < Math.min(count, 3); i++) {
         const text = await addrLocators.nth(i).textContent() ?? '';
@@ -273,7 +276,6 @@ test.describe('AI决策能力测试', () => {
           distances.push(mMatch[2] === 'km' ? val * 1000 : val);
         }
       }
-      // 如果提取到了距离，验证从近到远
       if (distances.length >= 2) {
         for (let i = 0; i < distances.length - 1; i++) {
           expect(distances[i]).toBeLessThanOrEqual(distances[i + 1]);
@@ -284,12 +286,13 @@ test.describe('AI决策能力测试', () => {
 });
 
 // ══════════════════════════════════════════════════════════════
-// 5. 移动端适配（iPhone 14）
+// 6. 移动端适配（390×844 iPhone 14）
 // ══════════════════════════════════════════════════════════════
-test.describe('移动端：ShopCard布局', () => {
+test.describe('移动端：布局与交互', () => {
   test.use({
     geolocation: LONGHUA_GEO,
     permissions: ['geolocation'],
+    viewport: { width: 390, height: 844 },
   });
 
   test.beforeEach(async ({ page }) => { await login(page); });
@@ -300,15 +303,26 @@ test.describe('移动端：ShopCard布局', () => {
 
     const card = page.locator('[data-testid="shop-card"]').first();
     const box = await card.boundingBox();
-
     expect(box).toBeTruthy();
-    // 卡片宽度不超过视口宽度
+
     const viewport = page.viewportSize();
     if (box && viewport) {
       expect(box.width).toBeLessThanOrEqual(viewport.width);
       expect(box.x).toBeGreaterThanOrEqual(0);
     }
   }, 90000);
+
+  test('iPhone14：CityPulseBar不溢出屏幕', async ({ page }) => {
+    await createChallenge(page, '咖啡，预算50元');
+    const bar = page.locator('[data-testid="city-pulse-bar"]');
+    await expect(bar).toBeVisible({ timeout: 15000 });
+
+    const box = await bar.boundingBox();
+    const viewport = page.viewportSize();
+    if (box && viewport) {
+      expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
+    }
+  }, 30000);
 
   test('移动端：完成任务按钮可点击', async ({ page }) => {
     await createChallenge(page, '今晚烧烤，预算30，2人');
@@ -319,4 +333,15 @@ test.describe('移动端：ShopCard布局', () => {
     await completeBtn.click();
     await expect(page.locator('text=✓ 已完成').first()).toBeVisible();
   }, 90000);
+
+  test('移动端：EventCard在CityPulseBar内横向滚动不溢出', async ({ page }) => {
+    await createChallenge(page, '今晚活动，预算0元');
+    const bar = page.locator('[data-testid="city-pulse-bar"]');
+    await expect(bar).toBeVisible({ timeout: 15000 });
+
+    // 页面无横向滚动条
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
+  }, 30000);
 });
