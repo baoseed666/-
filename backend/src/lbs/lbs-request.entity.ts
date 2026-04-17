@@ -1,8 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 import { Shop } from '../shops/shop.entity';
 
-export enum LbsStatus { WAITING = 'waiting', MATCHED = 'matched', EXPIRED = 'expired' }
+export enum LbsStatus {
+  WAITING = 'waiting',
+  MATCHED = 'matched',
+  EXPIRED = 'expired',
+}
 
 @Entity('lbs_requests')
 export class LbsRequest {

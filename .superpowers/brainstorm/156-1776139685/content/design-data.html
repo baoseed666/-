@@ -1,0 +1,124 @@
+<h2>设计第二节：数据模型 & API 设计</h2>
+<p class="subtitle">PostgreSQL 核心表结构 · RESTful + WebSocket 接口定义</p>
+
+<div class="section">
+  <h3>🗃️ 核心数据模型（PostgreSQL）</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;font-size:11px;font-family:monospace">
+
+    <div style="background:#0d1117;border:1px solid #58a6ff;border-radius:8px;padding:10px">
+      <div style="color:#58a6ff;font-size:13px;font-weight:bold;margin-bottom:8px">users</div>
+      <div style="color:#8b949e">id          UUID PK</div>
+      <div style="color:#e0e0e0">phone       VARCHAR(20) UNIQUE</div>
+      <div style="color:#e0e0e0">wechat_openid VARCHAR UNIQUE NULL</div>
+      <div style="color:#e0e0e0">nickname    VARCHAR(50)</div>
+      <div style="color:#e0e0e0">avatar_url  TEXT</div>
+      <div style="color:#e0e0e0">total_saved DECIMAL(10,2) DEFAULT 0</div>
+      <div style="color:#e0e0e0">rank_title  VARCHAR(20)</div>
+      <div style="color:#8b949e">created_at  TIMESTAMP</div>
+    </div>
+
+    <div style="background:#0d1117;border:1px solid #3fb950;border-radius:8px;padding:10px">
+      <div style="color:#3fb950;font-size:13px;font-weight:bold;margin-bottom:8px">challenges</div>
+      <div style="color:#8b949e">id          UUID PK</div>
+      <div style="color:#e0e0e0">user_id     UUID FK→users</div>
+      <div style="color:#e0e0e0">input_text  TEXT</div>
+      <div style="color:#e0e0e0">budget      DECIMAL(10,2)</div>
+      <div style="color:#e0e0e0">people_count INT</div>
+      <div style="color:#e0e0e0">city        VARCHAR(20)</div>
+      <div style="color:#e0e0e0">status      ENUM(active/completed/failed)</div>
+      <div style="color:#e0e0e0">saved_amount DECIMAL(10,2)</div>
+      <div style="color:#8b949e">created_at  TIMESTAMP</div>
+    </div>
+
+    <div style="background:#0d1117;border:1px solid #3fb950;border-radius:8px;padding:10px">
+      <div style="color:#3fb950;font-size:13px;font-weight:bold;margin-bottom:8px">challenge_tasks</div>
+      <div style="color:#8b949e">id          UUID PK</div>
+      <div style="color:#e0e0e0">challenge_id UUID FK→challenges</div>
+      <div style="color:#e0e0e0">type        ENUM(main/side/hidden)</div>
+      <div style="color:#e0e0e0">description TEXT</div>
+      <div style="color:#e0e0e0">tips        TEXT[]</div>
+      <div style="color:#e0e0e0">shop_id     UUID FK→shops NULL</div>
+      <div style="color:#e0e0e0">status      ENUM(pending/done/skipped)</div>
+      <div style="color:#e0e0e0">sort_order  INT</div>
+    </div>
+
+    <div style="background:#0d1117;border:1px solid #f78166;border-radius:8px;padding:10px">
+      <div style="color:#f78166;font-size:13px;font-weight:bold;margin-bottom:8px">shops</div>
+      <div style="color:#8b949e">id          UUID PK</div>
+      <div style="color:#e0e0e0">name        VARCHAR(100)</div>
+      <div style="color:#e0e0e0">category    VARCHAR(30)</div>
+      <div style="color:#e0e0e0">city        VARCHAR(20)</div>
+      <div style="color:#e0e0e0">district    VARCHAR(30)</div>
+      <div style="color:#e0e0e0">lat / lng   DECIMAL(10,7)</div>
+      <div style="color:#e0e0e0">avg_price   DECIMAL(8,2)</div>
+      <div style="color:#e0e0e0">rating      DECIMAL(3,1)</div>
+      <div style="color:#e0e0e0">discounts   JSONB</div>
+      <div style="color:#e0e0e0">open_hours  JSONB</div>
+      <div style="color:#8b949e">scraped_at  TIMESTAMP</div>
+    </div>
+
+    <div style="background:#0d1117;border:1px solid #ffa657;border-radius:8px;padding:10px">
+      <div style="color:#ffa657;font-size:13px;font-weight:bold;margin-bottom:8px">battle_reports</div>
+      <div style="color:#8b949e">id          UUID PK</div>
+      <div style="color:#e0e0e0">challenge_id UUID FK→challenges</div>
+      <div style="color:#e0e0e0">headline    TEXT</div>
+      <div style="color:#e0e0e0">rank_title  VARCHAR(30)</div>
+      <div style="color:#e0e0e0">percentile  INT</div>
+      <div style="color:#e0e0e0">image_url   TEXT</div>
+      <div style="color:#8b949e">created_at  TIMESTAMP</div>
+    </div>
+
+    <div style="background:#0d1117;border:1px solid #39d353;border-radius:8px;padding:10px">
+      <div style="color:#39d353;font-size:13px;font-weight:bold;margin-bottom:8px">lbs_requests</div>
+      <div style="color:#8b949e">id          UUID PK</div>
+      <div style="color:#e0e0e0">user_id     UUID FK→users</div>
+      <div style="color:#e0e0e0">shop_id     UUID FK→shops NULL</div>
+      <div style="color:#e0e0e0">lat / lng   DECIMAL(10,7)</div>
+      <div style="color:#e0e0e0">tags        TEXT[]</div>
+      <div style="color:#e0e0e0">status      ENUM(waiting/matched/expired)</div>
+      <div style="color:#e0e0e0">matched_user UUID FK→users NULL</div>
+      <div style="color:#8b949e">expires_at  TIMESTAMP</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <h3>🔌 API 端点设计</h3>
+  <div style="margin-top:8px;font-size:11px;font-family:monospace;background:#0d1117;border-radius:8px;padding:12px;line-height:2">
+    <div style="color:#888"># Auth</div>
+    <div><span style="color:#ffa657">POST</span> <span style="color:#e0e0e0">/auth/sms/send</span>        <span style="color:#888">发送验证码（Demo固定123456）</span></div>
+    <div><span style="color:#ffa657">POST</span> <span style="color:#e0e0e0">/auth/sms/verify</span>      <span style="color:#888">验证码登录 → JWT</span></div>
+    <div><span style="color:#ffa657">POST</span> <span style="color:#e0e0e0">/auth/wechat/callback</span>  <span style="color:#888">微信OAuth回调 → JWT</span></div>
+    <div><span style="color:#ffa657">POST</span> <span style="color:#e0e0e0">/auth/refresh</span>         <span style="color:#888">刷新 Access Token</span></div>
+
+    <div style="color:#888;margin-top:8px"># Challenge（AI核心）</div>
+    <div><span style="color:#ffa657">POST</span> <span style="color:#e0e0e0">/challenges</span>            <span style="color:#888">创建挑战 → AI生成任务（SSE流式输出）</span></div>
+    <div><span style="color:#3fb950">GET</span>  <span style="color:#e0e0e0">/challenges/:id</span>        <span style="color:#888">获取挑战详情+任务列表</span></div>
+    <div><span style="color:#58a6ff">PATCH</span><span style="color:#e0e0e0"> /challenges/:id/tasks/:tid</span> <span style="color:#888">更新任务状态</span></div>
+    <div><span style="color:#ffa657">POST</span> <span style="color:#e0e0e0">/challenges/:id/complete</span> <span style="color:#888">完成挑战，触发战报生成</span></div>
+
+    <div style="color:#888;margin-top:8px"># Shop</div>
+    <div><span style="color:#3fb950">GET</span>  <span style="color:#e0e0e0">/shops</span>                 <span style="color:#888">?city=&category=&lat=&lng=&limit=</span></div>
+    <div><span style="color:#3fb950">GET</span>  <span style="color:#e0e0e0">/shops/:id</span>             <span style="color:#888">店铺详情+优惠信息</span></div>
+
+    <div style="color:#888;margin-top:8px"># Battle Report</div>
+    <div><span style="color:#3fb950">GET</span>  <span style="color:#e0e0e0">/reports/:id</span>           <span style="color:#888">战报详情</span></div>
+    <div><span style="color:#3fb950">GET</span>  <span style="color:#e0e0e0">/reports/:id/image</span>     <span style="color:#888">PNG海报（直接返回图片）</span></div>
+
+    <div style="color:#888;margin-top:8px"># LBS</div>
+    <div><span style="color:#ffa657">POST</span> <span style="color:#e0e0e0">/lbs/request</span>           <span style="color:#888">上报位置+需求，加入匹配池</span></div>
+    <div><span style="color:#d2a8ff">WS</span>   <span style="color:#e0e0e0">/lbs/match</span>             <span style="color:#888">WebSocket：实时推送匹配结果</span></div>
+
+    <div style="color:#888;margin-top:8px"># Leaderboard</div>
+    <div><span style="color:#3fb950">GET</span>  <span style="color:#e0e0e0">/leaderboard</span>           <span style="color:#888">?city=&limit= 省钱排行榜</span></div>
+    <div><span style="color:#3fb950">GET</span>  <span style="color:#e0e0e0">/heatmap</span>              <span style="color:#888">?city= 今日热力图数据</span></div>
+    <div><span style="color:#3fb950">GET</span>  <span style="color:#e0e0e0">/stats/city</span>            <span style="color:#888">?city= 城市今日省钱统计</span></div>
+
+    <div style="color:#888;margin-top:8px"># Scraper Admin（内部）</div>
+    <div><span style="color:#ffa657">POST</span> <span style="color:#e0e0e0">/admin/scraper/start</span>   <span style="color:#888">触发爬虫任务（指定城市/品类）</span></div>
+    <div><span style="color:#3fb950">GET</span>  <span style="color:#e0e0e0">/admin/scraper/status</span>  <span style="color:#888">查看爬虫队列状态</span></div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">数据模型与API看起来完整吗？确认后进入「AI挑战引擎 & Prompt设计」</p>

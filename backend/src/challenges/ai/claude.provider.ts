@@ -1,6 +1,15 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { AIProvider, ChallengeInput, ReportInput, ReportOutput } from './ai-provider.interface';
-import { buildChallengePrompt, buildReportPrompt, SYSTEM_PROMPT } from './prompts';
+import {
+  AIProvider,
+  ChallengeInput,
+  ReportInput,
+  ReportOutput,
+} from './ai-provider.interface';
+import {
+  buildChallengePrompt,
+  buildReportPrompt,
+  SYSTEM_PROMPT,
+} from './prompts';
 
 export class ClaudeProvider implements AIProvider {
   private readonly client: Anthropic;
@@ -18,7 +27,10 @@ export class ClaudeProvider implements AIProvider {
     });
 
     for await (const event of stream) {
-      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+      if (
+        event.type === 'content_block_delta' &&
+        event.delta.type === 'text_delta'
+      ) {
         yield event.delta.text;
       }
     }

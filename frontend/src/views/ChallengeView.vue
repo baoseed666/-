@@ -3,25 +3,50 @@
     <div class="flex items-center gap-3 mb-6">
       <router-link to="/" class="text-arcade-muted hover:text-arcade-gold">‹</router-link>
       <h2 class="text-arcade-gold font-bold tracking-widest">省钱挑战</h2>
+      <span v-if="locationStatus === 'locating'" class="ml-auto text-xs text-arcade-muted animate-pulse">📡 定位中...</span>
+      <span v-else-if="locationStatus === 'ok'" class="ml-auto text-xs text-arcade-green" data-testid="location-ok">📍 已定位</span>
+      <span v-else-if="locationStatus === 'denied'" class="ml-auto text-xs text-arcade-muted" data-testid="location-denied">📍 位置未知</span>
     </div>
+
+    <!-- City pulse bar (appears on city_pulse SSE event) -->
+    <CityPulseBar v-if="store.cityPulse" :pulse="store.cityPulse" />
 
     <HPMPBar v-if="challenge" :current="parseFloat(challenge.budget)" :max="parseFloat(challenge.budget)" :mp="3" class="mb-4" />
 
-    <div v-if="streaming" class="card-arcade mb-4 text-center">
-      <p class="text-arcade-gold text-sm animate-pulse">⚡ AI 正在谋划省钱方案...</p>
+    <!-- Streaming state -->
+    <div v-if="streaming" class="card-arcade mb-4">
+      <p class="text-arcade-gold text-sm animate-pulse">
+        {{ store.actionQuery ? `⚡ 正在搜索「${store.actionQuery.category}」省钱方案...` : '⚡ AI 正在谋划省钱方案...' }}
+      </p>
       <p class="text-arcade-muted text-xs mt-1">{{ streamBuffer.length }} 字符已接收</p>
     </div>
 
+    <!-- Tasks -->
     <div v-if="challenge?.tasks?.length" class="space-y-3">
-      <TaskCard v-for="task in challenge.tasks" :key="task.id" :task="task" @complete="completeTask(task.id)" />
+      <div v-for="(task, i) in challenge.tasks" :key="task.id">
+        <TaskCard
+          :task="mergeTaskShops(task, i)"
+          @complete="completeTask(task.id)"
+        />
+      </div>
     </div>
 
+    <!-- Route card (appears on route_ready SSE event) -->
+    <RouteCard
+      v-if="store.route"
+      :route="store.route.route"
+      :shop-name="routeShopName"
+      class="mt-3"
+    />
+
+    <!-- Complete button -->
     <div v-if="challenge?.tasks?.length && !streaming" class="fixed bottom-6 left-4 right-4 max-w-lg mx-auto">
       <button @click="showCompleteModal = true" class="btn-arcade w-full justify-center text-lg">
         🏆 完成挑战，生成战报
       </button>
     </div>
 
+    <!-- Complete modal -->
     <div v-if="showCompleteModal" class="fixed inset-0 bg-black/80 flex items-center justify-center px-6 z-50">
       <div class="card-arcade w-full max-w-sm space-y-4">
         <h3 class="text-arcade-gold font-bold">确认完成挑战</h3>
@@ -40,12 +65,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useChallengeStore } from '../stores/challenge.store';
 import { api } from '../api/client';
 import HPMPBar from '../components/challenge/HPMPBar.vue';
 import TaskCard from '../components/challenge/TaskCard.vue';
+import CityPulseBar from '../components/city/CityPulseBar.vue';
+import RouteCard from '../components/city/RouteCard.vue';
+import type { ShopRecommendation } from '../components/shop/ShopCard.vue';
 
 interface Task {
   id: string;
@@ -54,6 +82,7 @@ interface Task {
   description: string;
   tips?: string[];
   shop?: { name: string };
+  shopRecommendations?: ShopRecommendation[];
 }
 
 interface Challenge {
@@ -71,17 +100,65 @@ const streamBuffer = ref('');
 const showCompleteModal = ref(false);
 const savedAmount = ref(0);
 
+const userLat = ref<number | undefined>(undefined);
+const userLng = ref<number | undefined>(undefined);
+type LocationStatus = 'idle' | 'locating' | 'ok' | 'denied';
+const locationStatus = ref<LocationStatus>('idle');
+
+const routeShopName = computed(() => {
+  if (!store.route) return undefined;
+  for (const shops of Object.values(store.shopMatches)) {
+    const found = shops.find((s) => s.id === store.route!.shopId);
+    if (found) return found.name;
+  }
+  return undefined;
+});
+
+function mergeTaskShops(task: Task, index: number): Task {
+  const liveShops = store.shopMatches[index];
+  if (!liveShops?.length) return task;
+  return { ...task, shopRecommendations: liveShops };
+}
+
+function getLocation(): Promise<{ lat: number; lng: number } | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    locationStatus.value = 'locating';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        userLat.value = pos.coords.latitude;
+        userLng.value = pos.coords.longitude;
+        locationStatus.value = 'ok';
+        resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      () => {
+        locationStatus.value = 'denied';
+        resolve(null);
+      },
+      { timeout: 5000, maximumAge: 60000 },
+    );
+  });
+}
+
 onMounted(async () => {
   const id = route.params.id as string;
   challenge.value = await store.load(id) as Challenge;
 
   if (!challenge.value.tasks?.length) {
+    const loc = await getLocation();
     streaming.value = true;
     await store.startStream(
       id,
+      loc?.lat,
+      loc?.lng,
       (chunk) => { streamBuffer.value += chunk; },
-      async () => { streaming.value = false; challenge.value = await store.load(id) as Challenge; },
+      async () => {
+        streaming.value = false;
+        challenge.value = await store.load(id) as Challenge;
+      },
     );
+  } else {
+    getLocation();
   }
 });
 

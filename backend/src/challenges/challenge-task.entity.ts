@@ -1,9 +1,24 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Challenge } from './challenge.entity';
 import { Shop } from '../shops/shop.entity';
+import { ShopRecommendation } from '../shops/shops.service';
 
-export enum TaskType { MAIN = 'main', SIDE = 'side', HIDDEN = 'hidden' }
-export enum TaskStatus { PENDING = 'pending', DONE = 'done', SKIPPED = 'skipped' }
+export enum TaskType {
+  MAIN = 'main',
+  SIDE = 'side',
+  HIDDEN = 'hidden',
+}
+export enum TaskStatus {
+  PENDING = 'pending',
+  DONE = 'done',
+  SKIPPED = 'skipped',
+}
 
 @Entity('challenge_tasks')
 export class ChallengeTask {
@@ -26,6 +41,10 @@ export class ChallengeTask {
   @ManyToOne(() => Shop, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'shop_id' })
   shop: Shop | null;
+
+  /** AI匹配的真实店铺推荐列表（含图片/距离/优惠/外链） */
+  @Column({ name: 'shop_recommendations', type: 'jsonb', default: '[]' })
+  shopRecommendations: ShopRecommendation[];
 
   @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.PENDING })
   status: TaskStatus;

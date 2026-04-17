@@ -7,7 +7,9 @@ describe('Auth (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const module = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
     app = module.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
@@ -24,7 +26,9 @@ describe('Auth (e2e)', () => {
   });
 
   it('POST /auth/sms/verify → accessToken + refreshToken', async () => {
-    await request(app.getHttpServer()).post('/auth/sms/send').send({ phone: '13800138001' });
+    await request(app.getHttpServer())
+      .post('/auth/sms/send')
+      .send({ phone: '13800138001' });
     const res = await request(app.getHttpServer())
       .post('/auth/sms/verify')
       .send({ phone: '13800138001', otp: '123456' })
@@ -41,7 +45,9 @@ describe('Auth (e2e)', () => {
   });
 
   it('POST /auth/sms/verify 错误验证码 → 401', async () => {
-    await request(app.getHttpServer()).post('/auth/sms/send').send({ phone: '13800138002' });
+    await request(app.getHttpServer())
+      .post('/auth/sms/send')
+      .send({ phone: '13800138002' });
     return request(app.getHttpServer())
       .post('/auth/sms/verify')
       .send({ phone: '13800138002', otp: '000000' })

@@ -1,6 +1,15 @@
 import OpenAI from 'openai';
-import { AIProvider, ChallengeInput, ReportInput, ReportOutput } from './ai-provider.interface';
-import { buildChallengePrompt, buildReportPrompt, SYSTEM_PROMPT } from './prompts';
+import {
+  AIProvider,
+  ChallengeInput,
+  ReportInput,
+  ReportOutput,
+} from './ai-provider.interface';
+import {
+  buildChallengePrompt,
+  buildReportPrompt,
+  SYSTEM_PROMPT,
+} from './prompts';
 
 export class DeepSeekProvider implements AIProvider {
   private readonly client: OpenAI;

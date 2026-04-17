@@ -1,0 +1,103 @@
+<h2>设计第四节：前端游戏化UI风格方向</h2>
+<p class="subtitle">Vue3 + Vite + TypeScript + TailwindCSS · 移动端 H5 优先 · 选一个主风格</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="dark-rpg" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:linear-gradient(135deg,#0d0d1a 0%,#1a0533 100%);padding:16px;min-height:200px">
+      <!-- Mock phone screen -->
+      <div style="background:#12122a;border-radius:12px;padding:12px;border:1px solid #6c2ef5;max-width:200px;margin:0 auto;font-family:monospace">
+        <div style="color:#a855f7;font-size:10px;letter-spacing:2px">⚔️ CHALLENGE MODE</div>
+        <div style="color:#fff;font-size:13px;font-weight:bold;margin:6px 0">今晚烧烤·30元预算</div>
+        <div style="display:flex;gap:6px;margin:8px 0">
+          <div style="background:#1e1040;border:1px solid #6c2ef5;border-radius:4px;padding:4px 6px;font-size:9px;color:#a855f7">HP 30元</div>
+          <div style="background:#1e1040;border:1px solid #f59e0b;border-radius:4px;padding:4px 6px;font-size:9px;color:#f59e0b">MP ×3技能</div>
+        </div>
+        <div style="background:#0d0d1a;border-radius:6px;padding:8px;border-left:3px solid #3fb950">
+          <div style="color:#3fb950;font-size:9px">🎯 主线任务</div>
+          <div style="color:#e0e0e0;font-size:10px;margin-top:2px">找到20:00后半价串店</div>
+        </div>
+        <div style="background:#0d0d1a;border-radius:6px;padding:8px;border-left:3px solid #f59e0b;margin-top:4px">
+          <div style="color:#f59e0b;font-size:9px">⚡ 支线任务</div>
+          <div style="color:#e0e0e0;font-size:10px;margin-top:2px">发起拼单解锁双人折扣</div>
+        </div>
+        <div style="background:#0d0d1a;border-radius:6px;padding:8px;border-left:3px solid #a855f7;margin-top:4px">
+          <div style="color:#a855f7;font-size:9px">🏆 隐藏成就</div>
+          <div style="color:#e0e0e0;font-size:10px;margin-top:2px">5分钟内打卡返现10元</div>
+        </div>
+        <div style="background:linear-gradient(90deg,#6c2ef5,#a855f7);border-radius:6px;padding:8px;margin-top:8px;text-align:center;font-size:11px;color:#fff;font-weight:bold">
+          ▶ 开始挑战
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>🌑 暗黑RPG风</h3>
+      <p>深紫/深蓝底色，荧光紫+绿高亮，任务面板像RPG技能树，HP/MP可视化血条，游戏感最强。Z世代最爱的赛博朋克氛围。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="neon-game" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:linear-gradient(135deg,#0a0a0a 0%,#1a1a00 100%);padding:16px;min-height:200px">
+      <div style="background:#111;border-radius:12px;padding:12px;border:1px solid #ffdd00;max-width:200px;margin:0 auto;font-family:monospace;box-shadow:0 0 20px rgba(255,221,0,0.2)">
+        <div style="color:#ffdd00;font-size:10px;letter-spacing:2px">💰 抠门大王</div>
+        <div style="color:#fff;font-size:12px;font-weight:bold;margin:4px 0">上海·3人聚餐·¥150</div>
+        <div style="background:#1a1a00;border:1px solid #ffdd00;border-radius:6px;padding:6px;margin:6px 0">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="color:#ffdd00;font-size:9px">省钱进度</span>
+            <span style="color:#fff;font-size:9px;font-weight:bold">¥68 / ¥150</span>
+          </div>
+          <div style="background:#333;border-radius:4px;height:4px;margin-top:4px">
+            <div style="background:#ffdd00;width:45%;height:100%;border-radius:4px"></div>
+          </div>
+        </div>
+        <div style="border:1px dashed #ffdd00;border-radius:6px;padding:6px;margin:4px 0">
+          <div style="color:#ffdd00;font-size:9px">A级任务</div>
+          <div style="color:#ccc;font-size:10px">4.5分人均&lt;50火锅+团购叠加</div>
+          <div style="color:#00ff88;font-size:9px;margin-top:2px">预计节省 ¥32 ✓</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">
+          <div style="background:#1a1a00;border:1px solid #555;border-radius:4px;padding:4px;text-align:center;font-size:9px;color:#999">排行榜</div>
+          <div style="background:#ffdd00;border-radius:4px;padding:4px;text-align:center;font-size:9px;color:#000;font-weight:bold">拼单！</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>⚡ 霓虹街机风</h3>
+      <p>黑底+金黄/荧光绿高亮，像90年代街机得分板，进度条+任务卡片+数字跳动，"钱"的视觉感最强，契合省钱主题。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="clean-app" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:16px;min-height:200px">
+      <div style="background:#fff;border-radius:16px;padding:12px;max-width:200px;margin:0 auto">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:11px;font-weight:bold;color:#333">抠门大王</div>
+          <div style="background:#f3e8ff;color:#7c3aed;font-size:9px;padding:2px 6px;border-radius:99px">Lv.3 省钱老手</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:10px;padding:10px;margin:8px 0;color:#fff">
+          <div style="font-size:9px;opacity:0.8">今晚任务</div>
+          <div style="font-size:12px;font-weight:bold">烧烤挑战 · ¥30</div>
+          <div style="font-size:9px;margin-top:4px">预计省 ¥12</div>
+        </div>
+        <div style="space-y:4px">
+          <div style="display:flex;align-items:center;gap:6px;padding:6px;background:#f8f8f8;border-radius:8px;margin-bottom:4px">
+            <div style="width:20px;height:20px;background:#dcfce7;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px">🎯</div>
+            <div style="font-size:10px;color:#333">找20:00后半价串店</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:6px;background:#f8f8f8;border-radius:8px;margin-bottom:4px">
+            <div style="width:20px;height:20px;background:#fef3c7;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px">⚡</div>
+            <div style="font-size:10px;color:#333">发起拼单</div>
+          </div>
+        </div>
+        <div style="background:#7c3aed;border-radius:8px;padding:7px;text-align:center;font-size:10px;color:#fff;font-weight:bold;margin-top:6px">开始任务</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>🎨 现代App风</h3>
+      <p>白卡片+紫色主题，像Notion/Linear的现代SaaS感，清晰易读，游戏元素以徽章/等级形式融入，更接近主流App审美。</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">点击选择你想要的UI风格，也可以告诉我"A+C混合"这类需求</p>

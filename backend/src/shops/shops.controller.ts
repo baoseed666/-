@@ -7,6 +7,31 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 export class ShopsController {
   constructor(private readonly shops: ShopsService) {}
 
+  @Get('recommend')
+  recommend(
+    @Query('city') city: string,
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+    @Query('category') category?: string,
+    @Query('budget') budget?: string,
+    @Query('discountTypes') discountTypes?: string,
+    @Query('openNow') openNow?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.shops.recommendShops({
+      city,
+      lat: lat ? parseFloat(lat) : undefined,
+      lng: lng ? parseFloat(lng) : undefined,
+      category,
+      budget: budget ? parseFloat(budget) : undefined,
+      discountTypes: discountTypes
+        ? discountTypes.split(',').map((s) => s.trim())
+        : undefined,
+      openNow: openNow === 'true',
+      limit: limit ? parseInt(limit, 10) : 5,
+    });
+  }
+
   @Get()
   search(
     @Query('city') city: string,

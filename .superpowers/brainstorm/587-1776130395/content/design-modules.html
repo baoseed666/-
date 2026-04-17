@@ -1,0 +1,65 @@
+<h2>设计第一节：模块范围 & 11天排期</h2>
+<p class="subtitle">确认功能边界，避免后期范围蔓延</p>
+
+<div class="section">
+  <h3>🗂️ 7大核心模块</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#58a6ff;font-weight:bold;margin-bottom:6px">① AuthModule</div>
+      <div style="font-size:12px;color:#8b949e">Phase 1: 手机号+短信验证码<br>Phase 2: 微信网页授权（后补）<br>JWT Session + Redis 存储</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#3fb950;font-weight:bold;margin-bottom:6px">② ChallengeModule（AI核心）</div>
+      <div style="font-size:12px;color:#8b949e">输入: 预算+人数+活动+城区<br>DeepSeek生成3套方案+子任务<br>Claude兜底复杂推理</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#f78166;font-weight:bold;margin-bottom:6px">③ ShopModule</div>
+      <div style="font-size:12px;color:#8b949e">店铺搜索（城市/品类/距离）<br>优惠信息 / 隐藏折扣缓存<br>数据来自 ScraperWorker</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#d2a8ff;font-weight:bold;margin-bottom:6px">④ ScraperWorker</div>
+      <div style="font-size:12px;color:#8b949e">Puppeteer + 大众点评<br>Bull队列 + Redis<br>多城市/多品类并发，限速1-3 req/s</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#ffa657;font-weight:bold;margin-bottom:6px">⑤ BattleReportModule</div>
+      <div style="font-size:12px;color:#8b949e">AI生成战报文案（HP/MP游戏术语）<br>Sharp生成PNG分享图<br>OSS/本地存储分享链接</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#39d353;font-weight:bold;margin-bottom:6px">⑥ LBSModule</div>
+      <div style="font-size:12px;color:#8b949e">上报坐标 + 需求标签<br>100m内相似需求匹配<br>WebSocket推送匹配结果</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;grid-column:1/-1">
+      <div style="color:#79c0ff;font-weight:bold;margin-bottom:6px">⑦ LeaderboardModule</div>
+      <div style="font-size:12px;color:#8b949e">城市省钱热力图数据 / 个人省钱总榜 / 段位称号系统（薅羊毛学徒→抠门大王）/ 今日城市统计</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📅 11天开发排期</h3>
+  <div style="margin-top:8px;font-size:12px">
+    <div style="display:grid;grid-template-columns:80px 1fr;gap:6px;align-items:start">
+      <div style="color:#ffa657;font-weight:bold">Day 1-2</div>
+      <div style="color:#e0e0e0">项目脚手架 / PostgreSQL+Redis / Auth(SMS) / 爬虫框架 + Bull队列 / DB Schema全部建好</div>
+      <div style="color:#ffa657;font-weight:bold">Day 3-4</div>
+      <div style="color:#e0e0e0">爬虫跑通大众点评（餐饮/娱乐/购物）多城市 / ShopModule API / 数据入库验证</div>
+      <div style="color:#3fb950;font-weight:bold">Day 5-6</div>
+      <div style="color:#e0e0e0">ChallengeModule AI核心 / DeepSeek Prompt工程 / 3套方案+主线+支线+隐藏任务生成</div>
+      <div style="color:#58a6ff;font-weight:bold">Day 7-8</div>
+      <div style="color:#e0e0e0">前端主流程：输入页→任务面板→店铺匹配→完成确认 / 游戏化UI组件</div>
+      <div style="color:#d2a8ff;font-weight:bold">Day 9</div>
+      <div style="color:#e0e0e0">BattleReport生成 / Sharp海报 / 排行榜 / 称号系统</div>
+      <div style="color:#f78166;font-weight:bold">Day 10</div>
+      <div style="color:#e0e0e0">LBS拼单WebSocket / 城市热力图 / 联调全流程</div>
+      <div style="color:#39d353;font-weight:bold">Day 11</div>
+      <div style="color:#e0e0e0">Playwright E2E测试 / lint + build / Demo数据填充 / 演示脚本排练</div>
+    </div>
+  </div>
+</div>
+
+<div style="background:#1c2128;border:1px solid #388bfd;border-radius:8px;padding:12px;margin-top:12px">
+  <div style="color:#79c0ff;font-size:13px">⚠️ 范围外（不做）</div>
+  <div style="font-size:12px;color:#8b949e;margin-top:4px">支付系统 / 真实返现 / 短信实际发送（用固定验证码 123456 演示） / 小程序审核 / 微信登录（后补）</div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">这一节看起来范围合理吗？确认后进入「数据模型 & API设计」</p>

@@ -5,6 +5,12 @@ export interface ChallengeInput {
   city: string;
   shopContext: string;
   timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
+  cityPulse?: {
+    weather: { temp: number; desc: string; suitable: boolean; icon: string };
+    crowdLevel: 'low' | 'medium' | 'high';
+    hotNeighborhood: string;
+  };
+  eventsContext?: string;
 }
 
 export interface AiTask {
@@ -24,7 +30,9 @@ export interface AiPlan {
   tasks: AiTask[];
 }
 
-export interface ChallengeOutput { plans: AiPlan[]; }
+export interface ChallengeOutput {
+  plans: AiPlan[];
+}
 
 export interface ReportInput {
   savedAmount: number;

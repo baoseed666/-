@@ -1,0 +1,71 @@
+<h2>架构方案选型</h2>
+<p class="subtitle">选择最适合11天黑客松的技术架构</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>🏗️ 模块化单体（推荐）</h3>
+      <p>NestJS 单体，内部按模块严格分层；Vue3 SPA；PostgreSQL + Redis；独立爬虫进程</p>
+      <div style="margin-top:12px;background:#1a1a2e;border-radius:8px;padding:12px;font-size:12px;line-height:1.8;font-family:monospace;color:#e0e0e0">
+        <div style="color:#4fc3f7">[ Vue3 H5 ]</div>
+        <div style="color:#888">     ↓ REST / SSE</div>
+        <div style="color:#81c784">[ NestJS API ]</div>
+        <div style="color:#888">  ├─ AuthModule (SMS→微信)</div>
+        <div style="color:#888">  ├─ ChallengeModule (DeepSeek/Claude)</div>
+        <div style="color:#888">  ├─ ShopModule (爬虫数据)</div>
+        <div style="color:#888">  ├─ BattleReportModule (海报生成)</div>
+        <div style="color:#888">  └─ LBSModule (拼单匹配)</div>
+        <div style="color:#ffb74d">[ PostgreSQL ]  [ Redis ]</div>
+        <div style="color:#f48fb1">[ Scraper Worker ] ← 独立进程</div>
+      </div>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>优势</h4><ul><li>开发最快，调试最简</li><li>11天内可完整交付</li><li>模块边界清晰可演进</li></ul></div>
+        <div class="cons"><h4>权衡</h4><ul><li>单点部署，后续拆分需重构</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>🔬 微服务架构</h3>
+      <p>Auth / Challenge / Scraper / Report 各自独立服务，API Gateway 聚合</p>
+      <div style="margin-top:12px;background:#1a1a2e;border-radius:8px;padding:12px;font-size:12px;line-height:1.8;font-family:monospace;color:#e0e0e0">
+        <div style="color:#4fc3f7">[ Vue3 ]</div>
+        <div style="color:#888">   ↓</div>
+        <div style="color:#81c784">[ API Gateway ]</div>
+        <div style="color:#888">  ↙  ↓  ↓  ↘</div>
+        <div style="color:#ffb74d">[Auth][Challenge][Shop][Report]</div>
+        <div style="color:#888">各自独立数据库 + 消息队列</div>
+      </div>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>优势</h4><ul><li>架构"好看"，评委印象加分</li><li>服务可独立部署扩展</li></ul></div>
+        <div class="cons"><h4>权衡</h4><ul><li>11天极难完整交付</li><li>调试复杂度×5</li><li>黑客松杀手</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>⚡ 单体 + 爬虫独立服务</h3>
+      <p>主体同A，但爬虫拆成独立微服务 + 队列，爬取时不影响主服务性能</p>
+      <div style="margin-top:12px;background:#1a1a2e;border-radius:8px;padding:12px;font-size:12px;line-height:1.8;font-family:monospace;color:#e0e0e0">
+        <div style="color:#4fc3f7">[ Vue3 ]</div>
+        <div style="color:#888">     ↓</div>
+        <div style="color:#81c784">[ NestJS 单体 ]</div>
+        <div style="color:#888">     ↕ Bull队列</div>
+        <div style="color:#f48fb1">[ Scraper Service ]</div>
+        <div style="color:#888">  多城市 / 多品类并发爬取</div>
+        <div style="color:#ffb74d">[ PostgreSQL ]  [ Redis ]</div>
+      </div>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>优势</h4><ul><li>爬虫不阻塞API服务</li><li>队列支持重试/限速</li><li>主体仍然是单体，开发快</li></ul></div>
+        <div class="cons"><h4>权衡</h4><ul><li>需多配置Bull+Redis队列</li><li>比纯A略复杂</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">⭐ 推荐 A 或 C — 真实数据爬取量大选C更稳，纯速度优先选A</p>

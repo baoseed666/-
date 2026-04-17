@@ -26,7 +26,10 @@
       </div>
     </div>
 
-    <div v-else class="text-arcade-muted">加载战报中...</div>
+    <div v-else class="text-center space-y-3">
+      <p class="text-arcade-muted">{{ error || '加载战报中...' }}</p>
+      <router-link v-if="error" to="/" class="btn-arcade text-sm">返回首页</router-link>
+    </div>
   </div>
 </template>
 
@@ -46,10 +49,15 @@ interface Report {
 
 const route = useRoute();
 const report = ref<Report | null>(null);
+const error = ref('');
 const imageUrl = computed(() => report.value ? api.reports.imageUrl(report.value.id) : '');
 
 onMounted(async () => {
-  report.value = (await api.reports.get(route.params.id as string)).data as Report;
+  try {
+    report.value = (await api.reports.get(route.params.id as string)).data as Report;
+  } catch (e: any) {
+    error.value = e?.response?.data?.message ?? '加载失败，请返回重试';
+  }
 });
 
 function download() {

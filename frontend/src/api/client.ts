@@ -32,14 +32,31 @@ export const api = {
     refresh: (refreshToken: string) => client.post<{ accessToken: string }>('/auth/refresh', { refreshToken }),
   },
   challenges: {
-    create: (rawText: string, city: string) => client.post<{ id: string; budget: string }>('/challenges', { rawText, city }),
+    create: (rawText: string) => client.post<{ id: string; budget: string }>('/challenges', { rawText }),
     get: (id: string) => client.get(`/challenges/${id}`),
     updateTask: (id: string, taskId: string, status: string) => client.patch(`/challenges/${id}/tasks/${taskId}`, { status }),
     complete: (id: string, savedAmount: number) => client.post(`/challenges/${id}/complete`, { savedAmount }),
-    streamUrl: (id: string) => `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/challenges/${id}/stream`,
+    streamUrl: (id: string, lat?: number, lng?: number) => {
+      const base = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/challenges/${id}/stream`;
+      const params = new URLSearchParams();
+      if (lat !== undefined) params.set('lat', String(lat));
+      if (lng !== undefined) params.set('lng', String(lng));
+      const qs = params.toString();
+      return qs ? `${base}?${qs}` : base;
+    },
   },
   shops: {
     search: (city: string, params?: Record<string, string>) => client.get('/shops', { params: { city, ...params } }),
+    recommend: (params: {
+      city: string;
+      lat?: number;
+      lng?: number;
+      category?: string;
+      budget?: number;
+      discountTypes?: string;
+      openNow?: boolean;
+      limit?: number;
+    }) => client.get('/shops/recommend', { params }),
   },
   reports: {
     generate: (challengeId: string) => client.post<{ id: string; rankTitle: string; percentile: number; imageUrl: string }>('/reports', { challengeId }),

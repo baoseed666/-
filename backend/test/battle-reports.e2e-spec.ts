@@ -9,13 +9,17 @@ describe('BattleReports (e2e)', () => {
   let challengeId: string;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const module = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
     app = module.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
     // register / login
-    await request(app.getHttpServer()).post('/auth/sms/send').send({ phone: '13600136000' });
+    await request(app.getHttpServer())
+      .post('/auth/sms/send')
+      .send({ phone: '13600136000' });
     const authRes = await request(app.getHttpServer())
       .post('/auth/sms/verify')
       .send({ phone: '13600136000', otp: '123456' });

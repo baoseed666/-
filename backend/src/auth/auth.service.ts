@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -23,15 +28,21 @@ export class AuthService {
     }
   }
 
-  async verifySms(phone: string, otp: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async verifySms(
+    phone: string,
+    otp: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const stored = await this.redis.get(`sms:${phone}`);
-    if (!stored || stored !== otp) throw new UnauthorizedException('验证码错误或已过期');
+    if (!stored || stored !== otp)
+      throw new UnauthorizedException('验证码错误或已过期');
     await this.redis.del(`sms:${phone}`);
     const user = await this.users.upsertByPhone(phone);
     return this.issueTokens(user);
   }
 
-  async wechatCallback(code: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async wechatCallback(
+    code: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const { openid, nickname, avatarUrl } = await this.exchangeWechatCode(code);
     const user = await this.users.upsertByWechat(openid, nickname, avatarUrl);
     return this.issueTokens(user);
@@ -43,9 +54,12 @@ export class AuthService {
     const { userId } = JSON.parse(stored);
     const user = await this.users.findById(userId);
     if (!user) throw new UnauthorizedException();
-    const accessToken = this.jwt.sign({ sub: user.id }, {
-      expiresIn: this.config.get('jwt.accessExpires'),
-    });
+    const accessToken = this.jwt.sign(
+      { sub: user.id },
+      {
+        expiresIn: this.config.get('jwt.accessExpires'),
+      },
+    );
     return { accessToken };
   }
 
@@ -75,11 +89,16 @@ export class AuthService {
       `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${appSecret}&code=${code}&grant_type=authorization_code`,
     );
     const data: any = await res.json();
-    if (data.errcode) throw new BadRequestException(`微信授权失败: ${data.errmsg}`);
+    if (data.errcode)
+      throw new BadRequestException(`微信授权失败: ${data.errmsg}`);
     const infoRes = await fetch(
       `https://api.weixin.qq.com/sns/userinfo?access_token=${data.access_token}&openid=${data.openid}`,
     );
     const info: any = await infoRes.json();
-    return { openid: data.openid, nickname: info.nickname ?? '微信用户', avatarUrl: info.headimgurl ?? '' };
+    return {
+      openid: data.openid,
+      nickname: info.nickname ?? '微信用户',
+      avatarUrl: info.headimgurl ?? '',
+    };
   }
 }

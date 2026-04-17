@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -14,7 +24,7 @@ export class ChallengesController {
 
   @Post()
   create(@CurrentUser() user: User, @Body() dto: CreateChallengeDto) {
-    return this.challenges.create(user, dto.rawText, dto.city);
+    return this.challenges.create(user, dto.rawText);
   }
 
   @Get(':id/stream')
@@ -38,7 +48,9 @@ export class ChallengesController {
         res.write(event);
       }
     } catch (err) {
-      res.write(`event: error\ndata: ${JSON.stringify({ message: (err as Error).message })}\n\n`);
+      res.write(
+        `event: error\ndata: ${JSON.stringify({ message: (err as Error).message })}\n\n`,
+      );
     }
     res.end();
   }

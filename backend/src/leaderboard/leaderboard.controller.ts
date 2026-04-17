@@ -8,11 +8,11 @@ export class LeaderboardController {
   constructor(private readonly leaderboardService: LeaderboardService) {}
 
   @Get('leaderboard')
-  getLeaderboard(
-    @Query('city') city: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.leaderboardService.getLeaderboard(city, limit ? parseInt(limit, 10) : 20);
+  getLeaderboard(@Query('city') city: string, @Query('limit') limit?: string) {
+    return this.leaderboardService.getLeaderboard(
+      city,
+      limit ? parseInt(limit, 10) : 20,
+    );
   }
 
   @Get('stats/city')

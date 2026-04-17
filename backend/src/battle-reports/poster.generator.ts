@@ -6,7 +6,12 @@ import { ReportOutput } from '../challenges/ai/ai-provider.interface';
 export class PosterGenerator {
   private readonly outputDir = path.join(process.cwd(), 'uploads', 'reports');
 
-  async generate(reportId: string, data: ReportOutput, savedAmount: number, budget: number): Promise<string> {
+  async generate(
+    reportId: string,
+    data: ReportOutput,
+    savedAmount: number,
+    budget: number,
+  ): Promise<string> {
     await fs.mkdir(this.outputDir, { recursive: true });
     const svg = `<svg width="750" height="1000" xmlns="http://www.w3.org/2000/svg">
   <rect width="750" height="1000" fill="#0a0a0a"/>
@@ -24,7 +29,9 @@ export class PosterGenerator {
   <text x="375" y="950" text-anchor="middle" font-family="monospace" font-size="14" fill="#555">抠门大王 · 省钱是一种态度</text>
 </svg>`;
     const filename = `${reportId}.png`;
-    await sharp(Buffer.from(svg)).png().toFile(path.join(this.outputDir, filename));
+    await sharp(Buffer.from(svg))
+      .png()
+      .toFile(path.join(this.outputDir, filename));
     return `/uploads/reports/${filename}`;
   }
 }

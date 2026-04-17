@@ -9,8 +9,10 @@ import { ChallengeTask, TaskStatus } from '../challenges/challenge-task.entity';
 export class LeaderboardService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
-    @InjectRepository(Challenge) private readonly challengeRepo: Repository<Challenge>,
-    @InjectRepository(ChallengeTask) private readonly taskRepo: Repository<ChallengeTask>,
+    @InjectRepository(Challenge)
+    private readonly challengeRepo: Repository<Challenge>,
+    @InjectRepository(ChallengeTask)
+    private readonly taskRepo: Repository<ChallengeTask>,
   ) {}
 
   async getLeaderboard(city: string, limit = 20) {
@@ -37,7 +39,9 @@ export class LeaderboardService {
       }>();
   }
 
-  async getCityStats(city: string): Promise<{ city: string; todayCount: number; todayTotalSaved: number }> {
+  async getCityStats(
+    city: string,
+  ): Promise<{ city: string; todayCount: number; todayTotalSaved: number }> {
     const row = await this.challengeRepo
       .createQueryBuilder('c')
       .where('c.city = :city', { city })
@@ -45,14 +49,20 @@ export class LeaderboardService {
       .andWhere('DATE(c.createdAt) = CURRENT_DATE')
       .select([
         'COUNT(*)::int                         AS "todayCount"',
-        'COALESCE(SUM(c.savedAmount::float), 0) AS "todayTotalSaved"',
+        'COALESCE(SUM(c.saved_amount::float), 0) AS "todayTotalSaved"',
       ])
       .getRawOne<{ todayCount: number; todayTotalSaved: number }>();
 
-    return { city, todayCount: row?.todayCount ?? 0, todayTotalSaved: row?.todayTotalSaved ?? 0 };
+    return {
+      city,
+      todayCount: row?.todayCount ?? 0,
+      todayTotalSaved: row?.todayTotalSaved ?? 0,
+    };
   }
 
-  async getHeatmap(city: string): Promise<{ district: string; count: string; saved: string }[]> {
+  async getHeatmap(
+    city: string,
+  ): Promise<{ district: string; count: string; saved: string }[]> {
     return this.taskRepo
       .createQueryBuilder('t')
       .innerJoin('t.challenge', 'c')
@@ -63,7 +73,7 @@ export class LeaderboardService {
       .select([
         's.district                             AS district',
         'COUNT(*)::text                         AS count',
-        'COALESCE(SUM(c.savedAmount::float), 0)::text AS saved',
+        'COALESCE(SUM(c.saved_amount::float), 0)::text AS saved',
       ])
       .groupBy('s.district')
       .orderBy('count', 'DESC')
@@ -75,7 +85,7 @@ export class LeaderboardService {
       .createQueryBuilder('c')
       .where('c.city = :city', { city })
       .andWhere('c.status = :status', { status: ChallengeStatus.COMPLETED })
-      .select('COALESCE(AVG(c.savedAmount::float), 0)', 'avg')
+      .select('COALESCE(AVG(c.saved_amount::float), 0)', 'avg')
       .getRawOne<{ avg: number }>();
 
     return row?.avg ?? 0;

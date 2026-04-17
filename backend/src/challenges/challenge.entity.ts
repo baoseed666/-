@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, OneToOne, CreateDateColumn, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  CreateDateColumn,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 import { ChallengeTask } from './challenge-task.entity';
 import { BattleReport } from '../battle-reports/battle-report.entity';
@@ -30,10 +39,20 @@ export class Challenge {
   @Column()
   city: string;
 
-  @Column({ type: 'enum', enum: ChallengeStatus, default: ChallengeStatus.ACTIVE })
+  @Column({
+    type: 'enum',
+    enum: ChallengeStatus,
+    default: ChallengeStatus.ACTIVE,
+  })
   status: ChallengeStatus;
 
-  @Column({ name: 'saved_amount', type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    name: 'saved_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
   savedAmount: number;
 
   @OneToMany(() => ChallengeTask, (t) => t.challenge, { cascade: true })

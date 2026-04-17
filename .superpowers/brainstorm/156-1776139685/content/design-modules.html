@@ -1,0 +1,82 @@
+<h2>设计第一节：模块范围 & 11天排期（已更新）</h2>
+<p class="subtitle">微信登录与SMS同步开发 · 真实支付/短信为生产目标 · Demo阶段用桩</p>
+
+<div class="section">
+  <h3>🗂️ 7大核心模块</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#58a6ff;font-weight:bold;margin-bottom:6px">① AuthModule</div>
+      <div style="font-size:12px;color:#8b949e">
+        <span style="color:#3fb950">✓</span> 手机号+短信（真实SMS服务代码，Demo用 123456 桩）<br>
+        <span style="color:#3fb950">✓</span> 微信网页授权（同步开发，待审批通过后可直接接入）<br>
+        JWT Access Token + Redis Refresh Session
+      </div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#3fb950;font-weight:bold;margin-bottom:6px">② ChallengeModule（AI核心）</div>
+      <div style="font-size:12px;color:#8b949e">输入: 预算+人数+活动+城区<br>DeepSeek-V3 生成3套方案+主/支/隐藏任务<br>Claude claude-sonnet-4-6 兜底复杂推理</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#f78166;font-weight:bold;margin-bottom:6px">③ ShopModule</div>
+      <div style="font-size:12px;color:#8b949e">店铺搜索（城市/品类/距离排序）<br>优惠/隐藏折扣标签<br>数据来自 ScraperWorker</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#d2a8ff;font-weight:bold;margin-bottom:6px">④ ScraperWorker</div>
+      <div style="font-size:12px;color:#8b949e">Puppeteer + Stealth + 大众点评<br>Bull队列 + Redis<br>多城市/多品类并发，限速 1-3 req/s<br>失败自动重试</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#ffa657;font-weight:bold;margin-bottom:6px">⑤ BattleReportModule</div>
+      <div style="font-size:12px;color:#8b949e">AI生成战报文案（HP/MP游戏术语）<br>Sharp 生成 PNG 分享海报<br>本地存储 → 生产OSS</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px">
+      <div style="color:#39d353;font-weight:bold;margin-bottom:6px">⑥ LBSModule</div>
+      <div style="font-size:12px;color:#8b949e">上报坐标+需求标签<br>100m内相似需求匹配<br>WebSocket 推送匹配结果</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;grid-column:1/-1">
+      <div style="color:#79c0ff;font-weight:bold;margin-bottom:6px">⑦ LeaderboardModule</div>
+      <div style="font-size:12px;color:#8b949e">城市省钱热力图数据 / 个人省钱总榜 / 段位称号系统 / 今日城市实时统计</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📅 11天开发排期（已修订）</h3>
+  <div style="margin-top:8px;font-size:12px">
+    <div style="display:grid;grid-template-columns:80px 1fr;gap:6px;align-items:start">
+      <div style="color:#ffa657;font-weight:bold">Day 1-2</div>
+      <div style="color:#e0e0e0">脚手架 / Schema全部建好 / <span style="color:#58a6ff">Auth全部完成（SMS + 微信OAuth同步开发）</span> / 爬虫框架+Bull队列</div>
+      <div style="color:#ffa657;font-weight:bold">Day 3-4</div>
+      <div style="color:#e0e0e0">爬虫跑通大众点评（餐饮/娱乐/购物）多城市 / ShopModule CRUD + 搜索 API</div>
+      <div style="color:#3fb950;font-weight:bold">Day 5-6</div>
+      <div style="color:#e0e0e0">ChallengeModule AI核心 / Prompt工程 / 3套方案+主/支/隐藏任务生成与评估</div>
+      <div style="color:#58a6ff;font-weight:bold">Day 7-8</div>
+      <div style="color:#e0e0e0">前端主流程：输入→任务面板→店铺匹配→完成确认 / 游戏化暗色UI</div>
+      <div style="color:#d2a8ff;font-weight:bold">Day 9</div>
+      <div style="color:#e0e0e0">BattleReport生成 / Sharp海报 / 排行榜 / 段位称号系统</div>
+      <div style="color:#f78166;font-weight:bold">Day 10</div>
+      <div style="color:#e0e0e0">LBS拼单WebSocket / 城市热力图 / 全流程联调</div>
+      <div style="color:#39d353;font-weight:bold">Day 11</div>
+      <div style="color:#e0e0e0">Playwright E2E测试（桌面+移动）/ lint + build / Demo数据填充</div>
+    </div>
+  </div>
+</div>
+
+<div style="background:#1c2128;border:1px solid #388bfd;border-radius:8px;padding:12px;margin-top:12px">
+  <div style="color:#79c0ff;font-size:13px">📌 Demo阶段桩 vs 生产目标</div>
+  <div style="font-size:12px;color:#8b949e;margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div>
+      <div style="color:#ffa657">Demo阶段（现在）</div>
+      <div>短信验证码固定 123456</div>
+      <div>支付按钮存在但跳过真实支付</div>
+      <div>微信登录开发好，待审批</div>
+    </div>
+    <div>
+      <div style="color:#3fb950">生产目标（审批后）</div>
+      <div>接入真实短信服务商（阿里云/腾讯云）</div>
+      <div>接入真实支付（微信/支付宝）</div>
+      <div>微信登录直接切换</div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">确认这一节后，进入「数据模型 & API 设计」</p>

@@ -7,6 +7,9 @@ import { User } from '../users/user.entity';
 import { ShopsService } from '../shops/shops.service';
 import { AIProviderFactory } from './ai/ai-provider.factory';
 import { ChallengeOutput } from './ai/ai-provider.interface';
+import { CityPulseService } from '../city/city-pulse.service';
+import { CityEventsService } from '../city/city-events.service';
+import { AmapService } from '../transit/amap.service';
 
 @Injectable()
 export class ChallengesService {
@@ -17,16 +20,19 @@ export class ChallengesService {
     private readonly tasks: Repository<ChallengeTask>,
     private readonly shops: ShopsService,
     private readonly ai: AIProviderFactory,
+    private readonly cityPulse: CityPulseService,
+    private readonly cityEvents: CityEventsService,
+    private readonly amap: AmapService,
   ) {}
 
-  async create(user: User, rawText: string, city: string): Promise<Challenge> {
+  async create(user: User, rawText: string): Promise<Challenge> {
     const { budget, peopleCount } = this.parseBasics(rawText);
     const challenge = this.challenges.create({
       user,
       inputText: rawText,
       budget,
       peopleCount,
-      city,
+      city: '上海',
     });
     return this.challenges.save(challenge);
   }
@@ -42,7 +48,35 @@ export class ChallengesService {
     });
     if (!challenge) throw new NotFoundException();
 
+    const [pulse, eventsContext] = await Promise.all([
+      this.cityPulse.getPulse(),
+      this.cityEvents.getEventsContext(),
+    ]);
+
+    yield `event: city_pulse\ndata: ${JSON.stringify({
+      weather: pulse.weather,
+      crowdLevel: pulse.crowdLevel,
+      hotNeighborhood: pulse.hotNeighborhood,
+      openShopsCount: pulse.openShopsCount,
+      tip: pulse.tip,
+      activeEvents: pulse.activeEvents.map((e) => ({
+        name: e.name,
+        neighborhood: e.neighborhood,
+        costLow: e.costLow,
+        costHigh: e.costHigh,
+        tags: e.tags,
+        bookingUrl: e.bookingUrl,
+      })),
+    })}\n\n`;
+
     const category = this.inferShopCategory(challenge.inputText);
+
+    yield `event: action_query\ndata: ${JSON.stringify({
+      category,
+      city: challenge.city,
+      hasGps: !!(lat && lng),
+    })}\n\n`;
+
     const shopContext = await this.shops.getContextShops(
       challenge.city,
       category,
@@ -61,13 +95,58 @@ export class ChallengesService {
       city: challenge.city,
       shopContext,
       timeOfDay,
+      cityPulse: {
+        weather: pulse.weather,
+        crowdLevel: pulse.crowdLevel,
+        hotNeighborhood: pulse.hotNeighborhood,
+      },
+      eventsContext,
     })) {
       buffer += chunk;
       yield `event: task_chunk\ndata: ${JSON.stringify({ chunk })}\n\n`;
     }
 
     const output: ChallengeOutput = JSON.parse(buffer);
-    await this.persistTasks(challenge, output, lat, lng);
+    const shopRecs = await this.persistTasks(challenge, output, lat, lng);
+
+    for (const rec of shopRecs) {
+      if (rec.recommendations.length > 0) {
+        yield `event: shop_matched\ndata: ${JSON.stringify({
+          taskIndex: rec.taskIndex,
+          shops: rec.recommendations,
+        })}\n\n`;
+
+        for (const shop of rec.recommendations) {
+          if (shop.externalUrl) {
+            yield `event: booking_ready\ndata: ${JSON.stringify({
+              taskIndex: rec.taskIndex,
+              shopId: shop.id,
+              shopName: shop.name,
+              bookingUrl: shop.externalUrl,
+            })}\n\n`;
+          }
+        }
+      }
+    }
+
+    if (lat && lng && shopRecs.length > 0) {
+      const firstShop = shopRecs[0]?.recommendations[0];
+      if (firstShop && firstShop.lat && firstShop.lng) {
+        try {
+          const route = await this.amap.getWalkingRoute(
+            { lat, lng },
+            { lat: firstShop.lat, lng: firstShop.lng },
+          );
+          yield `event: route_ready\ndata: ${JSON.stringify({
+            shopId: firstShop.id,
+            route,
+          })}\n\n`;
+        } catch {
+          // route is optional, skip silently
+        }
+      }
+    }
+
     yield `event: complete\ndata: ${JSON.stringify({ challengeId })}\n\n`;
   }
 
@@ -196,13 +275,16 @@ export class ChallengesService {
     output: ChallengeOutput,
     lat?: number,
     lng?: number,
-  ) {
+  ): Promise<Array<{ taskIndex: number; recommendations: any[] }>> {
     const firstPlan = output.plans[0];
-    if (!firstPlan) return;
+    if (!firstPlan) return [];
 
     const budget = challenge.budget
       ? parseFloat(challenge.budget as any) / (challenge.peopleCount || 1)
       : undefined;
+
+    const shopResults: Array<{ taskIndex: number; recommendations: any[] }> =
+      [];
 
     const entities = await Promise.all(
       firstPlan.tasks.map(async (t, i) => {
@@ -219,14 +301,15 @@ export class ChallengesService {
           const combined = `${challenge.inputText} ${t.description} ${t.shopHint ?? ''}`;
           const category = this.inferShopCategory(combined);
           try {
-            task.shopRecommendations =
-              await this.shops.getRecommendationsForTask(
-                challenge.city,
-                category,
-                lat,
-                lng,
-                budget,
-              );
+            const recs = await this.shops.getRecommendationsForTask(
+              challenge.city,
+              category,
+              lat,
+              lng,
+              budget,
+            );
+            task.shopRecommendations = recs;
+            shopResults.push({ taskIndex: i, recommendations: recs });
           } catch {
             task.shopRecommendations = [];
           }
@@ -237,5 +320,6 @@ export class ChallengesService {
     );
 
     await this.tasks.save(entities);
+    return shopResults;
   }
 }

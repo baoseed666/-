@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import * as path from 'path';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -12,7 +20,10 @@ export class BattleReportsController {
   constructor(private readonly battleReports: BattleReportsService) {}
 
   @Post()
-  generate(@CurrentUser() user: User, @Body('challengeId') challengeId: string) {
+  generate(
+    @CurrentUser() user: User,
+    @Body('challengeId') challengeId: string,
+  ) {
     return this.battleReports.generate(challengeId, user.id);
   }
 

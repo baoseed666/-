@@ -1,0 +1,79 @@
+<h2>设计第三节：AI挑战引擎 & Prompt架构</h2>
+<p class="subtitle">DeepSeek-V3 主力 · Claude claude-sonnet-4-6 兜底 · SSE 流式输出 · 结构化JSON约束</p>
+
+<div class="section">
+  <h3>🧠 AI调用架构</h3>
+  <div style="background:#0d1117;border-radius:8px;padding:14px;font-size:12px;font-family:monospace;line-height:2;margin-top:8px">
+    <div style="color:#888"># 统一 AIProvider 接口（策略模式）</div>
+    <div style="color:#e0e0e0">interface AIProvider &#123;</div>
+    <div style="color:#e0e0e0">  streamChallenge(input: ChallengeInput): AsyncIterable&lt;ChallengeChunk&gt;</div>
+    <div style="color:#e0e0e0">  generateReport(data: ReportData): Promise&lt;ReportText&gt;</div>
+    <div style="color:#e0e0e0">&#125;</div>
+    <div style="color:#888;margin-top:8px"># 运行时选择：DeepSeek失败自动fallback到Claude</div>
+    <div style="color:#58a6ff">DeepSeekProvider</div> <span style="color:#888">→ 失败/超时</span> <span style="color:#ffa657">→ ClaudeProvider</span>
+    <div style="color:#888"># 两者都实现同一接口，切换零业务代码改动</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🎯 挑战生成 Prompt 架构（三层）</h3>
+  <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px;font-size:12px">
+    <div style="background:#0d1117;border:1px solid #3fb950;border-radius:8px;padding:12px">
+      <div style="color:#3fb950;font-weight:bold;margin-bottom:6px">Layer 1 — System Prompt（角色定义）</div>
+      <div style="color:#8b949e;line-height:1.6">
+        你是"抠门大王"AI挑战官。目标：在用户预算内找到<strong style="color:#e0e0e0">最极限的省钱方案</strong>，
+        但<strong style="color:#f78166">必须保障人身安全</strong>，不得推荐任何违法、危险、损害健康的行为。
+        你可以灵活替换用户活动类型，但需告知原因。输出必须是严格的JSON。
+      </div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #58a6ff;border-radius:8px;padding:12px">
+      <div style="color:#58a6ff;font-weight:bold;margin-bottom:6px">Layer 2 — Context Injection（动态注入）</div>
+      <div style="color:#8b949e;line-height:1.6">
+        注入内容：用户输入 / 城市实时店铺数据（从ShopModule取Top15相关店） /
+        当前时间段（午市/晚市/深夜）/ 天气 / 今日平台热门优惠关键词
+      </div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #ffa657;border-radius:8px;padding:12px">
+      <div style="color:#ffa657;font-weight:bold;margin-bottom:6px">Layer 3 — Output Schema（JSON强约束）</div>
+      <div style="color:#8b949e;font-family:monospace;font-size:11px;line-height:1.8">
+        &#123; plans: [ &#123; id, title, difficulty: "地狱"|"普通"|"简单",<br>
+        &nbsp;&nbsp;tasks: [ &#123; type:"main"|"side"|"hidden", desc, tips:[], shop_hint &#125; ],<br>
+        &nbsp;&nbsp;estimated_save: number, hp: number, mp: number &#125; ] &#125;
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>⚡ SSE 流式输出流程</h3>
+  <div style="background:#0d1117;border-radius:8px;padding:12px;font-size:12px;font-family:monospace;line-height:2;margin-top:8px">
+    <div><span style="color:#58a6ff">POST /challenges</span> <span style="color:#888">→ 立即返回 challenge_id</span></div>
+    <div><span style="color:#3fb950">GET  /challenges/:id/stream</span> <span style="color:#888">→ SSE长连接</span></div>
+    <div style="color:#888;margin-left:16px">event: plan_start  &nbsp;→ 前端显示"AI正在谋划..."</div>
+    <div style="color:#888;margin-left:16px">event: task_chunk  &nbsp;→ 逐条任务流式渲染到面板</div>
+    <div style="color:#888;margin-left:16px">event: shop_matched → 匹配到店铺，卡片弹出</div>
+    <div style="color:#888;margin-left:16px">event: complete    &nbsp;→ 三套方案全部生成完毕</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🛡️ 安全护栏（内置于Prompt，非外部过滤）</h3>
+  <div style="margin-top:8px;font-size:12px;color:#8b949e;line-height:1.8">
+    <div>• <strong style="color:#f78166">绝对禁止</strong>：翻垃圾桶/拾荒、凌晨独自外出、乞讨、违法占道经营参与</div>
+    <div>• <strong style="color:#ffa657">需警示</strong>：超过22:00的推荐必须加"注意人身安全"提示</div>
+    <div>• <strong style="color:#3fb950">鼓励</strong>：拼单、团购券叠加、平台新用户首单、错峰消费、自带食材</div>
+    <div>• <strong style="color:#58a6ff">灵活替换</strong>：AI可建议替换活动，但必须在tasks[0]说明原因</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📊 战报生成 Prompt</h3>
+  <div style="background:#0d1117;border-radius:8px;padding:12px;font-size:12px;color:#8b949e;line-height:1.6;margin-top:8px">
+    输入：&#123; saved_amount, budget, people, city, tasks_completed, city_avg_save &#125;<br>
+    输出：&#123; headline（一句话战报）, rank_title（称号）, percentile（击败%用户）,<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hp_consumed, mp_used, flavor_text（游戏风格描述）&#125;<br><br>
+    <span style="color:#3fb950">称号体系：</span> 消费韭菜 → 薅羊毛学徒 → 省钱老手 → 抠门高手 → 抠门大王 → 传说级穷鬼
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">AI引擎设计确认后，进入最后一节「前端架构 & 游戏化UI方向」（浏览器展示）</p>

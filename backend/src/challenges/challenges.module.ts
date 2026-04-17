@@ -6,9 +6,16 @@ import { ChallengesService } from './challenges.service';
 import { ChallengesController } from './challenges.controller';
 import { AIProviderFactory } from './ai/ai-provider.factory';
 import { ShopsModule } from '../shops/shops.module';
+import { CityModule } from '../city/city.module';
+import { TransitModule } from '../transit/transit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Challenge, ChallengeTask]), ShopsModule],
+  imports: [
+    TypeOrmModule.forFeature([Challenge, ChallengeTask]),
+    ShopsModule,
+    CityModule,
+    TransitModule,
+  ],
   controllers: [ChallengesController],
   providers: [ChallengesService, AIProviderFactory],
   exports: [AIProviderFactory],

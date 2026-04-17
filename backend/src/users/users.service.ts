@@ -5,11 +5,19 @@ import { User } from './user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly repo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly repo: Repository<User>,
+  ) {}
 
-  findById(id: string) { return this.repo.findOneBy({ id }); }
-  findByPhone(phone: string) { return this.repo.findOneBy({ phone }); }
-  findByWechatOpenid(openid: string) { return this.repo.findOneBy({ wechatOpenid: openid }); }
+  findById(id: string) {
+    return this.repo.findOneBy({ id });
+  }
+  findByPhone(phone: string) {
+    return this.repo.findOneBy({ phone });
+  }
+  findByWechatOpenid(openid: string) {
+    return this.repo.findOneBy({ wechatOpenid: openid });
+  }
 
   async upsertByPhone(phone: string): Promise<User> {
     let user = await this.findByPhone(phone);
@@ -20,7 +28,11 @@ export class UsersService {
     return user;
   }
 
-  async upsertByWechat(openid: string, nickname: string, avatarUrl: string): Promise<User> {
+  async upsertByWechat(
+    openid: string,
+    nickname: string,
+    avatarUrl: string,
+  ): Promise<User> {
     let user = await this.findByWechatOpenid(openid);
     if (!user) {
       user = this.repo.create({ wechatOpenid: openid, nickname, avatarUrl });

@@ -13,8 +13,10 @@ export class BattleReportsService {
   private readonly poster = new PosterGenerator();
 
   constructor(
-    @InjectRepository(BattleReport) private readonly reportRepo: Repository<BattleReport>,
-    @InjectRepository(Challenge) private readonly challengeRepo: Repository<Challenge>,
+    @InjectRepository(BattleReport)
+    private readonly reportRepo: Repository<BattleReport>,
+    @InjectRepository(Challenge)
+    private readonly challengeRepo: Repository<Challenge>,
     private readonly ai: AIProviderFactory,
     private readonly leaderboard: LeaderboardService,
   ) {}
@@ -27,7 +29,9 @@ export class BattleReportsService {
     if (!challenge) throw new NotFoundException('Challenge not found');
 
     const cityAvgSave = await this.leaderboard.getCityAvgSave(challenge.city);
-    const tasksCompleted = challenge.tasks.filter((t: ChallengeTask) => t.status === TaskStatus.DONE).length;
+    const tasksCompleted = challenge.tasks.filter(
+      (t: ChallengeTask) => t.status === TaskStatus.DONE,
+    ).length;
     const savedAmount = parseFloat(String(challenge.savedAmount));
     const budget = parseFloat(String(challenge.budget));
 
@@ -49,13 +53,21 @@ export class BattleReportsService {
     });
     const saved = await this.reportRepo.save(report);
 
-    const imageUrl = await this.poster.generate(saved.id, reportOutput, savedAmount, budget);
+    const imageUrl = await this.poster.generate(
+      saved.id,
+      reportOutput,
+      savedAmount,
+      budget,
+    );
     saved.imageUrl = imageUrl;
     return this.reportRepo.save(saved);
   }
 
   async findById(id: string): Promise<BattleReport> {
-    const report = await this.reportRepo.findOne({ where: { id } });
+    const report = await this.reportRepo.findOne({
+      where: { id },
+      relations: ['challenge'],
+    });
     if (!report) throw new NotFoundException('Battle report not found');
     return report;
   }

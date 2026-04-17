@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AIProvider, ChallengeInput, ReportInput, ReportOutput } from './ai-provider.interface';
+import {
+  AIProvider,
+  ChallengeInput,
+  ReportInput,
+  ReportOutput,
+} from './ai-provider.interface';
 import { DeepSeekProvider } from './deepseek.provider';
 import { ClaudeProvider } from './claude.provider';
 
@@ -10,7 +15,10 @@ export class AIProviderFactory implements AIProvider {
   private readonly claude: ClaudeProvider;
 
   constructor(config: ConfigService) {
-    this.deepseek = new DeepSeekProvider(config.get('deepseek.apiKey')!, config.get('deepseek.baseUrl')!);
+    this.deepseek = new DeepSeekProvider(
+      config.get('deepseek.apiKey')!,
+      config.get('deepseek.baseUrl')!,
+    );
     this.claude = new ClaudeProvider(config.get('anthropic.apiKey')!);
   }
 

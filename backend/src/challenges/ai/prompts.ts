@@ -1,5 +1,11 @@
 import { ChallengeInput, ReportInput } from './ai-provider.interface';
 
+const CROWD_TEXT: Record<string, string> = {
+  low: '人流稀少（好时机）',
+  medium: '人流适中',
+  high: '人多建议提前到',
+};
+
 export const SYSTEM_PROMPT = `你是"抠门大王"AI挑战官。你的使命：在用户预算内找到最极限的省钱方案。
 
 核心原则：
@@ -10,13 +16,25 @@ export const SYSTEM_PROMPT = `你是"抠门大王"AI挑战官。你的使命：�
 5. 输出必须是严格的JSON格式，不得有任何额外文字。`;
 
 export function buildChallengePrompt(input: ChallengeInput): string {
-  return `用户需求：${input.rawText}
-预算：¥${input.budget}，人数：${input.peopleCount}人，城市：${input.city}，时段：${input.timeOfDay}
+  const citySection = input.cityPulse
+    ? `
+【城市实时状态】
+天气：${input.cityPulse.weather.icon} ${input.cityPulse.weather.desc} ${input.cityPulse.weather.temp}°C
+当前人流：${CROWD_TEXT[input.cityPulse.crowdLevel] ?? input.cityPulse.crowdLevel}
+今日热点区域：${input.cityPulse.hotNeighborhood}
 
-当前城市可用店铺（Top15）：
+【正在举办的活动】
+${input.eventsContext || '暂无特别活动'}
+`
+    : '';
+
+  return `用户需求：${input.rawText}
+预算：¥${input.budget}，人数：${input.peopleCount}人，区域：上海徐汇区龙华街道，时段：${input.timeOfDay}
+${citySection}
+【可用店铺（按距离排序 Top15）】
 ${input.shopContext}
 
-请生成3套省钱方案（地狱/普通/简单各一套），每套包含主线任务1个、支线任务1个、隐藏成就1个。
+请生成3套省钱方案（地狱/普通/简单各一套），每套包含主线任务1个、支线任务1个、隐藏成就1个。充分利用城市实时信息，具体说明如何利用活动/折扣/时段省钱。
 
 输出格式（严格JSON）：
 {
