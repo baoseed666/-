@@ -7,6 +7,7 @@ import { Challenge } from '../challenges/challenge.entity';
 import { ChallengeTask } from '../challenges/challenge-task.entity';
 import { BattleReport } from '../battle-reports/battle-report.entity';
 import { LbsRequest } from '../lbs/lbs-request.entity';
+import { CityEvent } from '../city/city-event.entity';
 
 @Module({
   imports: [
@@ -19,7 +20,15 @@ import { LbsRequest } from '../lbs/lbs-request.entity';
         database: cfg.get('db.name'),
         username: cfg.get('db.user'),
         password: cfg.get('db.password'),
-        entities: [User, Shop, Challenge, ChallengeTask, BattleReport, LbsRequest],
+        entities: [
+          User,
+          Shop,
+          Challenge,
+          ChallengeTask,
+          BattleReport,
+          LbsRequest,
+          CityEvent,
+        ],
         synchronize: cfg.get('nodeEnv') === 'development',
         logging: false,
       }),

@@ -34,6 +34,7 @@
     "@nestjs/platform-socket.io": "^11.1.19",
     "@nestjs/typeorm": "^11.0.1",
     "@nestjs/websockets": "^11.1.19",
+    "axios": "^1.15.0",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.73.5",
     "class-transformer": "^0.5.1",

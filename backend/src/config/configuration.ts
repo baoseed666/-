@@ -34,4 +34,7 @@ export default () => ({
   anthropic: {
     apiKey: process.env.ANTHROPIC_API_KEY,
   },
+  amap: {
+    apiKey: process.env.AMAP_API_KEY ?? '',
+  },
 });
