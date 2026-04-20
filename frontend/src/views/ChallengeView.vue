@@ -3,12 +3,20 @@
     <div class="flex items-center gap-3 mb-6">
       <router-link to="/" class="text-arcade-muted hover:text-arcade-gold">‹</router-link>
       <h2 class="text-arcade-gold font-bold tracking-widest">省钱挑战</h2>
-      <span v-if="locationStatus === 'locating'" class="ml-auto text-xs text-arcade-muted animate-pulse">📡 定位中...</span>
-      <span v-else-if="locationStatus === 'ok'" class="ml-auto text-xs text-arcade-green" data-testid="location-ok">📍 已定位</span>
-      <span v-else-if="locationStatus === 'denied'" class="ml-auto text-xs text-arcade-muted" data-testid="location-denied">📍 位置未知</span>
+      <div class="ml-auto flex items-center gap-2">
+        <span v-if="locationStatus === 'locating'" class="text-xs text-arcade-muted animate-pulse">📡 定位中...</span>
+        <span v-else-if="locationStatus === 'ok'" class="text-xs text-arcade-green" data-testid="location-ok">📍 已定位</span>
+        <span v-else-if="locationStatus === 'ip'" class="text-xs text-arcade-gold" data-testid="location-ip">📍 城市定位</span>
+        <span v-else-if="locationStatus === 'denied'" class="text-xs text-arcade-muted" data-testid="location-denied">📍 位置未知</span>
+        <button
+          v-if="locationStatus === 'denied'"
+          @click="retryLocation"
+          class="text-xs px-2 py-0.5 rounded border border-arcade-gold text-arcade-gold hover:bg-arcade-gold hover:text-arcade-black transition-colors"
+        >重试</button>
+      </div>
     </div>
 
-    <!-- City pulse bar (appears on city_pulse SSE event) -->
+    <!-- City pulse bar -->
     <CityPulseBar v-if="store.cityPulse" :pulse="store.cityPulse" />
 
     <HPMPBar v-if="challenge && challenge.budget != null" :current="parseFloat(challenge.budget)" :max="parseFloat(challenge.budget)" :mp="3" class="mb-4" />
@@ -21,7 +29,7 @@
       <p class="text-arcade-muted text-xs mt-1">{{ streamBuffer.length }} 字符已接收</p>
     </div>
 
-    <!-- Plan selector (appears after streaming, before task confirmation) -->
+    <!-- Plan selector -->
     <PlanSelector
       v-if="!streaming && store.pendingPlans.length && !challenge?.tasks?.length"
       :plans="store.pendingPlans"
@@ -39,7 +47,7 @@
       </div>
     </div>
 
-    <!-- Route card (appears on route_ready SSE event) -->
+    <!-- Route card -->
     <RouteCard
       v-if="store.route"
       :route="store.route.route"
@@ -111,7 +119,7 @@ const savedAmount = ref(0);
 
 const userLat = ref<number | undefined>(undefined);
 const userLng = ref<number | undefined>(undefined);
-type LocationStatus = 'idle' | 'locating' | 'ok' | 'denied';
+type LocationStatus = 'idle' | 'locating' | 'ok' | 'ip' | 'denied';
 const locationStatus = ref<LocationStatus>('idle');
 
 const routeShopName = computed(() => {
@@ -129,10 +137,34 @@ function mergeTaskShops(task: Task, index: number): Task {
   return { ...task, shopRecommendations: liveShops };
 }
 
-function getLocation(): Promise<{ lat: number; lng: number } | null> {
+/** GPS 精确定位 → 高德 IP 定位降级 */
+async function getLocation(): Promise<{ lat: number; lng: number } | null> {
+  locationStatus.value = 'locating';
+
+  // 1. 尝试 GPS 精确定位
+  const gps = await tryGPS();
+  if (gps) return gps;
+
+  // 2. GPS 失败 → 高德 IP 定位降级
+  try {
+    const resp = await api.transit.ipLocation();
+    if (resp?.data?.lat && resp?.data?.lng) {
+      userLat.value = resp.data.lat;
+      userLng.value = resp.data.lng;
+      locationStatus.value = 'ip';
+      return { lat: resp.data.lat, lng: resp.data.lng };
+    }
+  } catch {
+    // ignore
+  }
+
+  locationStatus.value = 'denied';
+  return null;
+}
+
+function tryGPS(): Promise<{ lat: number; lng: number } | null> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) { resolve(null); return; }
-    locationStatus.value = 'locating';
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         userLat.value = pos.coords.latitude;
@@ -140,13 +172,18 @@ function getLocation(): Promise<{ lat: number; lng: number } | null> {
         locationStatus.value = 'ok';
         resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       },
-      () => {
-        locationStatus.value = 'denied';
-        resolve(null);
-      },
-      { timeout: 5000, maximumAge: 60000 },
+      () => resolve(null),
+      { timeout: 6000, maximumAge: 120000, enableHighAccuracy: false },
     );
   });
+}
+
+async function retryLocation() {
+  const loc = await getLocation();
+  if (loc) {
+    userLat.value = loc.lat;
+    userLng.value = loc.lng;
+  }
 }
 
 onMounted(async () => {

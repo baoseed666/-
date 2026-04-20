@@ -17,4 +17,9 @@ export class TransitController {
       { lat: toLat, lng: toLng },
     );
   }
+
+  @Get('ip-location')
+  getIpLocation() {
+    return this.amapService.getIpLocation();
+  }
 }

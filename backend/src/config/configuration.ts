@@ -37,4 +37,7 @@ export default () => ({
   amap: {
     apiKey: process.env.AMAP_API_KEY ?? '',
   },
+  baidu: {
+    ak: process.env.BAIDU_MAP_AK ?? '',
+  },
 });

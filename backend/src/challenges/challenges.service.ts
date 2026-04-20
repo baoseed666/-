@@ -6,7 +6,7 @@ import { ChallengeTask, TaskStatus } from './challenge-task.entity';
 import { User } from '../users/user.entity';
 import { ShopsService } from '../shops/shops.service';
 import { AIProviderFactory } from './ai/ai-provider.factory';
-import { ChallengeOutput } from './ai/ai-provider.interface';
+import { ChallengeOutput, ActionLink } from './ai/ai-provider.interface';
 import { CityPulseService } from '../city/city-pulse.service';
 import { CityEventsService } from '../city/city-events.service';
 import { AmapService } from '../transit/amap.service';
@@ -116,7 +116,6 @@ export class ChallengesService {
 
     const output: ChallengeOutput = JSON.parse(buffer);
 
-    // Save all plans to DB so confirm-plan can access them later
     challenge.allPlans = output.plans;
     await this.challenges.save(challenge);
 
@@ -131,7 +130,6 @@ export class ChallengesService {
       taskCount: p.tasks.length,
     }));
     yield `event: plans_ready\ndata: ${JSON.stringify({ plans: planSummaries })}\n\n`;
-
     yield `event: complete\ndata: ${JSON.stringify({ challengeId })}\n\n`;
   }
 
@@ -215,67 +213,34 @@ export class ChallengesService {
     };
   }
 
-  private inferShopCategory(text: string): string {
+  inferShopCategory(text: string): string {
     const t = text.toLowerCase();
 
-    if (/本帮|沪菜|上海菜|红烧肉|糖醋|葱油|松鹤楼|淘小馆|苏式汤面/.test(t))
-      return '本帮沪菜';
-    if (
-      /咖啡|拿铁|美式|卡布奇诺|摩卡|星巴克|瑞幸|manner|mstand|seesaw|blue bottle|蓝瓶/.test(
-        t,
-      )
-    )
-      return '咖啡奶茶';
-    if (/奶茶|茶饮|喜茶|奈雪|蜜雪|霸王茶姬|茶百道|沪上阿姨|开吉|fika/.test(t))
-      return '咖啡奶茶';
-    if (/甜品|蛋糕|冰淇淋|布丁|慕斯|提拉米苏|甜点|糕点|letao|蔡嘉|阿嬷/.test(t))
-      return '甜品蛋糕';
+    if (/本帮|沪菜|上海菜|红烧肉|糖醋|葱油/.test(t)) return '本帮沪菜';
+    if (/咖啡|拿铁|美式|卡布|摩卡|星巴克|瑞幸|manner|mstand|seesaw/.test(t)) return '咖啡奶茶';
+    if (/奶茶|茶饮|喜茶|奈雪|蜜雪|霸王茶姬|茶百道|沪上阿姨/.test(t)) return '咖啡奶茶';
+    if (/甜品|蛋糕|冰淇淋|布丁|慕斯|提拉米苏|甜点|糕点/.test(t)) return '甜品蛋糕';
     if (/火锅|涮锅|涮肉|麻辣烫|冒菜|串串香/.test(t)) return '火锅';
-    if (/烧烤|炭烤|撸串|烤串|bbq|烤肉|炙烤|趁烧/.test(t)) return '烧烤烤肉';
-    if (/海鲜|龙虾|小龙虾|螃蟹|生蚝|鱼鲜|烤鱼|炉鱼|甬府/.test(t))
-      return '鱼鲜海鲜';
+    if (/烧烤|炭烤|撸串|烤串|bbq|烤肉|炙烤/.test(t)) return '烧烤烤肉';
+    if (/海鲜|龙虾|小龙虾|螃蟹|生蚝|鱼鲜|烤鱼|炉鱼/.test(t)) return '鱼鲜海鲜';
     if (/寿司|日料|刺身|天妇罗|拉面|日本料理/.test(t)) return '日料';
     if (/韩国|韩料|韩式|泡菜|部队锅|韩餐/.test(t)) return '韩料';
-    if (/泰国|泰式|泰餐|四面泰|冬阴功/.test(t)) return '泰国料理';
-    if (/傣|傣味|傣族|傣菜|胡麻/.test(t)) return '傣味菜';
-    if (/越南|东南亚|越式|河粉|桂芭蕉/.test(t)) return '东南亚菜';
-    if (
-      /西餐|牛排|披萨|意面|意大利|法餐|汉堡|三明治|crafted|mozzarella/.test(t)
-    )
-      return '西餐';
-    if (/川菜|湘菜|川湘|麻辣|辣椒|重庆|长沙|瓦屋/.test(t)) return '川湘菜';
+    if (/泰国|泰式|泰餐|冬阴功/.test(t)) return '东南亚菜';
+    if (/越南|东南亚|越式|河粉/.test(t)) return '东南亚菜';
+    if (/西餐|牛排|披萨|意面|法餐|汉堡/.test(t)) return '西餐';
+    if (/川菜|湘菜|川湘|麻辣|辣椒|重庆|长沙/.test(t)) return '川湘菜';
     if (/粤菜|早茶|点心|广式|港式|肠粉|虾饺/.test(t)) return '粤菜';
-    if (/江浙|苏菜|浙菜|杭帮|苏帮|逸道/.test(t)) return '江浙菜';
-    if (/云南|贵州|云贵|米线|过桥|酸汤|彝族/.test(t)) return '云贵菜';
-    if (/西北|新疆|陕西|兰州|莜面|羊肉泡馍|肉夹馍|烩面/.test(t))
-      return '西北菜';
-    if (/地方菜|特色|风味|民俗|乡土|北京菜|京菜|烤鸭|柿合缘/.test(t))
-      return '风味地方菜';
+    if (/江浙|苏菜|浙菜|杭帮|苏帮/.test(t)) return '江浙菜';
+    if (/云南|贵州|云贵|米线|过桥|酸汤/.test(t)) return '云贵菜';
+    if (/西北|新疆|陕西|兰州|羊肉泡馍|肉夹馍/.test(t)) return '西北菜';
+    if (/地方菜|特色|风味|民俗|北京菜|烤鸭/.test(t)) return '风味地方菜';
     if (/自助|buffet|吃到饱|无限量/.test(t)) return '自助餐';
-    if (/自然酒|红酒|酒馆|wine|rckless|小酒馆/.test(t)) return '自然酒馆';
-    if (/汉服|国风|写真|照相馆|古装|旗袍|妆造|归朝欢/.test(t))
-      return '文化体验';
-    if (/美术馆|展览|博物馆|画展|艺术展|朵云轩|西岸穹顶|sfc|剧场/.test(t))
-      return '艺术展览';
-    if (/非遗|传统工艺|刺绣|盘扣|珐琅|木版水印|南方非遗/.test(t))
-      return '非遗体验';
-    if (/沉浸|三体|轮滑|disco|舞托邦|aark|剧本沉浸|discotopia/.test(t))
-      return '沉浸体验';
-    if (/亲子|科技馆|儿童|奈尔宝|乐园|益智/.test(t)) return '亲子科技';
-    if (
-      /跑步|登山|户外运动|on昂跑|lululemon|patagonia|mammut|攀岩|goeasy|helly/.test(
-        t,
-      )
-    )
-      return '户外运动';
-    if (/潮牌|bape|undefeated|supreme|潮流|streetwear|army logic|exit/.test(t))
-      return '潮流服饰';
-    if (/ktv|唱歌|唱k|k歌|卡拉ok|魅ktv/.test(t)) return 'KTV';
+    if (/ktv|唱歌|唱k|k歌|卡拉ok/.test(t)) return 'KTV';
     if (/电影|影院|看片|影城/.test(t)) return '电影院';
     if (/桌游|棋牌|剧本杀|狼人杀/.test(t)) return '桌游';
-    if (/密室|逃脱|密室逃脱/.test(t)) return '密室逃脱';
-    if (/购物|逛街|商场|超市|买买买|aldi|优衣库|uniqlo/.test(t)) return '购物';
-    if (/公园|爬山|户外|骑行|露营|健身|步道/.test(t)) return '户外公园';
+    if (/密室|逃脱/.test(t)) return '密室逃脱';
+    if (/购物|逛街|商场|超市/.test(t)) return '购物';
+    if (/公园|爬山|户外|骑行|露营|健身/.test(t)) return '户外公园';
 
     return '小吃简餐';
   }
@@ -294,19 +259,17 @@ export class ChallengesService {
     lat?: number,
     lng?: number,
     planIndex = 0,
-  ): Promise<Array<{ taskIndex: number; recommendations: any[] }>> {
-    const firstPlan = output.plans[planIndex];
-    if (!firstPlan) return [];
+  ): Promise<void> {
+    const plan = output.plans[planIndex];
+    if (!plan) return;
 
+    const difficulty = plan.difficulty ?? '普通';
     const budget = challenge.budget
       ? parseFloat(challenge.budget as any) / (challenge.peopleCount || 1)
       : undefined;
 
-    const shopResults: Array<{ taskIndex: number; recommendations: any[] }> =
-      [];
-
     const entities = await Promise.all(
-      firstPlan.tasks.map(async (t, i) => {
+      plan.tasks.map(async (t, i) => {
         const task = this.tasks.create({
           challenge,
           type: t.type as any,
@@ -314,42 +277,15 @@ export class ChallengesService {
           tips: t.tips,
           sortOrder: i,
           shopRecommendations: [],
+          actionLinks: [],
         });
 
         if (t.type === 'main') {
-          const combined = `${challenge.inputText} ${t.description} ${t.shopHint ?? ''}`;
-          const category = this.inferShopCategory(combined);
-          try {
-            const recs = await this.shops.getRecommendationsForTask(
-              challenge.city,
-              category,
-              lat,
-              lng,
-              budget,
-            );
-            task.shopRecommendations = recs;
-            shopResults.push({ taskIndex: i, recommendations: recs });
-
-            const firstShop = recs[0];
-            if (firstShop) {
-              const links: import('./ai/ai-provider.interface').ActionLink[] = [];
-              if (firstShop.externalUrl) {
-                links.push({ type: 'book', label: '去美团预约', url: firstShop.externalUrl });
-              }
-              if (firstShop.lat && firstShop.lng) {
-                const navUrl = `https://uri.amap.com/navigation?to=${firstShop.lng},${firstShop.lat},${encodeURIComponent(firstShop.name)}&mode=walk&callnative=0`;
-                links.push({ type: 'nav', label: '高德导航', url: navUrl });
-              }
-              task.actionLinks = links;
-            }
-          } catch {
-            task.shopRecommendations = [];
-          }
+          await this.buildMainTaskLinks(task, challenge, t.shopHint, difficulty, lat, lng, budget);
         } else if (t.type === 'side') {
-          const q = encodeURIComponent(`${t.description} ${challenge.city}`);
-          task.actionLinks = [
-            { type: 'search', label: '搜索攻略', url: `https://www.xiaohongshu.com/search_result?keyword=${q}` },
-          ];
+          task.actionLinks = this.buildSideTaskLinks(t.description, challenge.city, difficulty);
+        } else if (t.type === 'hidden') {
+          task.actionLinks = this.buildHiddenTaskLinks(t.description, challenge.city, difficulty);
         }
 
         return task;
@@ -357,6 +293,117 @@ export class ChallengesService {
     );
 
     await this.tasks.save(entities);
-    return shopResults;
+  }
+
+  /** 主线任务：真实店铺 + 大众点评 + 美团 + 高德导航 */
+  private async buildMainTaskLinks(
+    task: ChallengeTask,
+    challenge: Challenge,
+    shopHint: string | null,
+    difficulty: string,
+    lat?: number,
+    lng?: number,
+    budget?: number,
+  ): Promise<void> {
+    const combined = `${challenge.inputText} ${task.description} ${shopHint ?? ''}`;
+    const category = this.inferShopCategory(combined);
+
+    try {
+      const recs = await this.shops.getRecommendationsForTask(
+        challenge.city,
+        category,
+        lat,
+        lng,
+        budget,
+      );
+      task.shopRecommendations = recs;
+
+      const links: ActionLink[] = [];
+      const bestShop = recs[0];
+
+      if (bestShop) {
+        // 大众点评详情/搜索
+        if (bestShop.dianpingUrl) {
+          links.push({ type: 'book', label: '大众点评', url: bestShop.dianpingUrl });
+        }
+        // 美团订餐/预约
+        if (bestShop.meituanUrl) {
+          links.push({ type: 'book', label: '美团预约', url: bestShop.meituanUrl });
+        }
+        // 高德导航
+        if (bestShop.amapNavUrl) {
+          links.push({ type: 'nav', label: '高德导航', url: bestShop.amapNavUrl });
+        }
+      }
+
+      // 地狱难度额外：拼团/比价链接
+      if (difficulty === '地狱') {
+        const q = encodeURIComponent(shopHint ?? task.description);
+        links.push({ type: 'group', label: '拼多多找团购', url: `https://mobile.yangkeduo.com/search_result.html?search_key=${q}` });
+        links.push({ type: 'search', label: '什么值得买比价', url: `https://m.smzdm.com/search/?s=${q}` });
+      }
+
+      task.actionLinks = links;
+    } catch {
+      task.shopRecommendations = [];
+      task.actionLinks = this.fallbackMainLinks(task.description, challenge.city);
+    }
+  }
+
+  /** 支线任务：按难度分级的省钱攻略链接 */
+  private buildSideTaskLinks(description: string, city: string, difficulty: string): ActionLink[] {
+    const q = encodeURIComponent(`${description} ${city} 省钱攻略`);
+    const links: ActionLink[] = [
+      { type: 'search', label: '小红书攻略', url: `https://www.xiaohongshu.com/search_result?keyword=${q}` },
+    ];
+
+    if (difficulty === '地狱') {
+      links.push(
+        { type: 'group', label: '拼多多比价', url: `https://mobile.yangkeduo.com/search_result.html?search_key=${encodeURIComponent(description)}` },
+        { type: 'search', label: '闲鱼二手', url: `https://www.goofish.com/search?keyword=${encodeURIComponent(description)}` },
+      );
+    } else if (difficulty === '普通') {
+      links.push(
+        { type: 'book', label: '美团优惠券', url: `https://h5.meituan.com/rgc/index.html?keyword=${encodeURIComponent(description)}` },
+      );
+    } else {
+      links.push(
+        { type: 'book', label: '口碑优惠', url: `https://m.koubei.com/search?q=${encodeURIComponent(description)}` },
+      );
+    }
+
+    return links;
+  }
+
+  /** 隐藏成就：具体省钱技巧入口 */
+  private buildHiddenTaskLinks(description: string, city: string, difficulty: string): ActionLink[] {
+    const q = encodeURIComponent(description);
+    const links: ActionLink[] = [];
+
+    if (/券|优惠|折扣|红包/.test(description)) {
+      links.push({ type: 'search', label: '淘宝领券', url: `https://s.taobao.com/search?q=${q}+优惠券` });
+      links.push({ type: 'search', label: '美团领券', url: `https://h5.meituan.com/coupon/list.html` });
+    } else if (/签到|打卡|积分/.test(description)) {
+      links.push({ type: 'student', label: '支付宝积分', url: 'https://render.alipay.com/p/yuyan/180020010001205809/index.html' });
+    } else if (/拼团|组队|拼单/.test(description)) {
+      links.push({ type: 'group', label: '发起拼单', url: `https://mobile.yangkeduo.com/search_result.html?search_key=${q}` });
+    } else {
+      const qCity = encodeURIComponent(`${description} ${city} 技巧`);
+      links.push({ type: 'search', label: '小红书隐藏技巧', url: `https://www.xiaohongshu.com/search_result?keyword=${qCity}` });
+    }
+
+    if (difficulty === '地狱') {
+      links.push({ type: 'search', label: '什么值得买', url: `https://m.smzdm.com/search/?s=${q}` });
+    }
+
+    return links;
+  }
+
+  private fallbackMainLinks(description: string, city: string): ActionLink[] {
+    const q = encodeURIComponent(`${description} ${city}`);
+    return [
+      { type: 'book', label: '大众点评搜索', url: `https://m.dianping.com/search/keyword/1/0_${q}` },
+      { type: 'book', label: '美团搜索', url: `https://h5.waimai.meituan.com/waimai/mindex/home?q=${q}` },
+    ];
   }
 }

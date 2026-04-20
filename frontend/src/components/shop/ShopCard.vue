@@ -1,8 +1,7 @@
 <template>
   <div
-    class="shop-card block rounded border border-arcade-border bg-arcade-dim hover:border-arcade-gold transition-all duration-200 overflow-hidden group cursor-pointer"
+    class="shop-card block rounded border border-arcade-border bg-arcade-dim overflow-hidden group"
     data-testid="shop-card"
-    @click="openExternal"
   >
     <div class="flex gap-3 p-3">
       <!-- 封面图 -->
@@ -15,16 +14,14 @@
           @error="onImgError"
           data-testid="shop-image"
         />
-        <div v-else class="w-full h-full flex items-center justify-center text-2xl">
-          🍽️
-        </div>
+        <div v-else class="w-full h-full flex items-center justify-center text-2xl">🍽️</div>
       </div>
 
       <!-- 信息区 -->
       <div class="flex-1 min-w-0">
         <!-- 店名 + 评分 -->
         <div class="flex items-center justify-between gap-2 mb-1">
-          <span class="text-sm font-bold text-white truncate group-hover:text-arcade-gold transition-colors" data-testid="shop-name">
+          <span class="text-sm font-bold text-white truncate" data-testid="shop-name">
             {{ shop.name }}
           </span>
           <span v-if="shop.rating" class="flex-shrink-0 text-xs text-arcade-gold font-bold" data-testid="shop-rating">
@@ -48,9 +45,7 @@
             :key="dt"
             :class="discountBadgeClass(dt)"
             class="text-xs px-1.5 py-0.5 rounded border font-medium"
-          >
-            {{ dt }}
-          </span>
+          >{{ dt }}</span>
         </div>
 
         <!-- 具体优惠文案 -->
@@ -59,31 +54,37 @@
             v-for="detail in discountDetails.slice(0, 2)"
             :key="detail"
             class="text-xs text-arcade-green"
-          >
-            {{ detail }}
-          </p>
+          >{{ detail }}</p>
         </div>
-      </div>
 
-      <!-- 右箭头 + 平台标识 -->
-      <div class="flex-shrink-0 flex flex-col items-center justify-between py-1">
-        <span :class="platformBadge.cls" class="text-xs px-1 py-0.5 rounded font-bold" data-testid="shop-platform">
-          {{ platformBadge.label }}
-        </span>
-        <span class="text-arcade-muted text-sm group-hover:text-arcade-gold transition-colors">›</span>
+        <!-- 人均 + 来源 -->
+        <div class="flex items-center gap-2 mt-1">
+          <span v-if="shop.avgPrice" class="text-xs text-arcade-muted">
+            人均 <span class="text-arcade-gold font-bold">¥{{ shop.avgPrice }}</span>
+          </span>
+          <span v-if="shop.source === 'amap'" class="text-xs text-arcade-blue/70 border border-arcade-blue/30 px-1 rounded">高德实时</span>
+          <span v-else-if="shop.platform === 'dianping'" class="text-xs text-orange-400/70 border border-orange-400/30 px-1 rounded">大众点评</span>
+          <span v-else-if="shop.platform === 'meituan'" class="text-xs text-yellow-400/70 border border-yellow-400/30 px-1 rounded">美团</span>
+        </div>
       </div>
     </div>
 
-    <!-- 人均价格 + 高德导航 -->
-    <div class="flex items-center justify-between px-3 pb-2">
-      <div v-if="shop.avgPrice" class="text-xs text-arcade-muted">
-        人均 <span class="text-arcade-gold font-bold">¥{{ shop.avgPrice }}</span>
-      </div>
-      <div v-else />
+    <!-- 一键行动栏 -->
+    <div class="flex border-t border-arcade-border/50 divide-x divide-arcade-border/50" data-testid="shop-actions">
       <button
-        @click.stop="openNav"
-        class="text-xs px-2 py-0.5 rounded bg-arcade-green/10 border border-arcade-green/40 text-arcade-green hover:bg-arcade-green hover:text-arcade-black transition-colors"
-        title="高德地图导航"
+        @click="openDianping"
+        class="flex-1 py-2 text-xs text-center text-orange-400 hover:bg-orange-400/10 transition-colors"
+        title="大众点评"
+      >📖 点评</button>
+      <button
+        @click="openMeituan"
+        class="flex-1 py-2 text-xs text-center text-yellow-400 hover:bg-yellow-400/10 transition-colors"
+        title="美团预约"
+      >🛵 美团</button>
+      <button
+        @click="openNav"
+        class="flex-1 py-2 text-xs text-center text-arcade-green hover:bg-arcade-green/10 transition-colors"
+        title="高德导航"
       >🗺️ 导航</button>
     </div>
   </div>
@@ -98,6 +99,8 @@ export interface ShopRecommendation {
   imageUrl: string | null;
   address: string | null;
   district: string;
+  lat?: number;
+  lng?: number;
   distance: number;
   distanceText: string;
   avgPrice: number | null;
@@ -105,30 +108,35 @@ export interface ShopRecommendation {
   discountTypes: string[];
   discounts: Record<string, string>;
   externalUrl: string | null;
-  platform: 'dianping' | 'meituan' | 'unknown';
+  meituanUrl?: string | null;
+  dianpingUrl?: string | null;
+  amapNavUrl?: string | null;
+  platform: 'dianping' | 'meituan' | 'amap' | 'unknown';
   openHours: Record<string, string>;
+  source?: 'db' | 'amap';
 }
 
 const props = defineProps<{ shop: ShopRecommendation }>();
 
 const discountDetails = computed(() => Object.values(props.shop.discounts ?? {}));
 
-function openExternal() {
-  const url = props.shop.externalUrl;
-  if (url) window.open(url, '_blank', 'noopener,noreferrer');
-}
-
-function openNav() {
-  const name = encodeURIComponent(props.shop.name);
-  const url = `https://uri.amap.com/navigation?to=${props.shop.lng},${props.shop.lat},${name}&mode=walking&src=koumen&coordinate=wgs84&callnative=0`;
+function openDianping() {
+  const url = props.shop.dianpingUrl ?? props.shop.externalUrl
+    ?? `https://m.dianping.com/search/keyword/1/0_${encodeURIComponent(props.shop.name)}`;
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-const platformBadge = computed(() => {
-  if (props.shop.platform === 'dianping') return { label: '点评', cls: 'text-orange-400 border border-orange-400/40 bg-orange-400/10' };
-  if (props.shop.platform === 'meituan') return { label: '美团', cls: 'text-yellow-400 border border-yellow-400/40 bg-yellow-400/10' };
-  return { label: '外链', cls: 'text-arcade-muted border border-arcade-border' };
-});
+function openMeituan() {
+  const url = props.shop.meituanUrl
+    ?? `https://h5.waimai.meituan.com/waimai/mindex/home?q=${encodeURIComponent(props.shop.name)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function openNav() {
+  const url = props.shop.amapNavUrl
+    ?? `https://uri.amap.com/navigation?to=${props.shop.lng},${props.shop.lat},${encodeURIComponent(props.shop.name)}&mode=walk&callnative=0`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
 
 function discountBadgeClass(dt: string) {
   if (dt === '神券') return 'border-red-400/60 text-red-400 bg-red-400/10';

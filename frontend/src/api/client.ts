@@ -70,6 +70,9 @@ export const api = {
     myStats: () => client.get('/reports/my-stats'),
     imageUrl: (id: string) => `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/reports/${id}/image`,
   },
+  transit: {
+    ipLocation: () => client.get<{ lat: number; lng: number; city: string; district: string }>('/transit/ip-location'),
+  },
   leaderboard: {
     get: (city: string) => client.get('/leaderboard', { params: { city } }),
     cityStats: (city: string) => client.get('/stats/city', { params: { city } }),
