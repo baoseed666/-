@@ -1,6 +1,6 @@
 export interface ChallengeInput {
   rawText: string;
-  budget: number;
+  budget: number | null;
   peopleCount: number;
   city: string;
   shopContext: string;
@@ -13,11 +13,18 @@ export interface ChallengeInput {
   eventsContext?: string;
 }
 
+export interface ActionLink {
+  type: 'book' | 'nav' | 'group' | 'student' | 'search';
+  label: string;
+  url: string;
+}
+
 export interface AiTask {
   type: 'main' | 'side' | 'hidden';
   description: string;
   tips: string[];
   shopHint: string | null;
+  actionLinks?: ActionLink[];
 }
 
 export interface AiPlan {
@@ -27,6 +34,7 @@ export interface AiPlan {
   hp: number;
   mp: number;
   estimatedSave: number;
+  estimatedSpend: number;
   tasks: AiTask[];
 }
 

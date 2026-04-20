@@ -17,7 +17,10 @@
           <p class="text-white text-sm">{{ u.nickname }}</p>
           <p class="text-arcade-muted text-xs">{{ u.rankTitle }}</p>
         </div>
-        <p class="text-arcade-green font-bold">¥{{ parseFloat(u.totalSaved).toFixed(0) }}</p>
+        <div class="text-right">
+          <p class="text-arcade-green font-bold text-sm">¥{{ parseFloat(u.totalSaved).toFixed(0) }}</p>
+          <p class="text-arcade-gold text-xs">{{ u.points ?? 0 }} 积分</p>
+        </div>
       </div>
     </div>
   </div>
@@ -32,6 +35,7 @@ interface LeaderboardUser {
   nickname: string;
   rankTitle: string;
   totalSaved: string;
+  points: number;
 }
 
 interface CityStats {

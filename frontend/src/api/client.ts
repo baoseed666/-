@@ -35,6 +35,12 @@ export const api = {
     create: (rawText: string) => client.post<{ id: string; budget: string }>('/challenges', { rawText }),
     get: (id: string) => client.get(`/challenges/${id}`),
     updateTask: (id: string, taskId: string, status: string) => client.patch(`/challenges/${id}/tasks/${taskId}`, { status }),
+    confirmPlan: (id: string, planIndex: number, lat?: number, lng?: number) => {
+      const params: Record<string, string> = {};
+      if (lat !== undefined) params.lat = String(lat);
+      if (lng !== undefined) params.lng = String(lng);
+      return client.post(`/challenges/${id}/confirm-plan`, { planIndex }, { params });
+    },
     complete: (id: string, savedAmount: number) => client.post(`/challenges/${id}/complete`, { savedAmount }),
     streamUrl: (id: string, lat?: number, lng?: number) => {
       const base = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/challenges/${id}/stream`;
@@ -61,6 +67,7 @@ export const api = {
   reports: {
     generate: (challengeId: string) => client.post<{ id: string; rankTitle: string; percentile: number; imageUrl: string }>('/reports', { challengeId }),
     get: (id: string) => client.get(`/reports/${id}`),
+    myStats: () => client.get('/reports/my-stats'),
     imageUrl: (id: string) => `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/reports/${id}/image`,
   },
   leaderboard: {

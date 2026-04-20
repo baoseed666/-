@@ -11,7 +11,7 @@
     <!-- City pulse bar (appears on city_pulse SSE event) -->
     <CityPulseBar v-if="store.cityPulse" :pulse="store.cityPulse" />
 
-    <HPMPBar v-if="challenge" :current="parseFloat(challenge.budget)" :max="parseFloat(challenge.budget)" :mp="3" class="mb-4" />
+    <HPMPBar v-if="challenge && challenge.budget != null" :current="parseFloat(challenge.budget)" :max="parseFloat(challenge.budget)" :mp="3" class="mb-4" />
 
     <!-- Streaming state -->
     <div v-if="streaming" class="card-arcade mb-4">
@@ -20,6 +20,14 @@
       </p>
       <p class="text-arcade-muted text-xs mt-1">{{ streamBuffer.length }} 字符已接收</p>
     </div>
+
+    <!-- Plan selector (appears after streaming, before task confirmation) -->
+    <PlanSelector
+      v-if="!streaming && store.pendingPlans.length && !challenge?.tasks?.length"
+      :plans="store.pendingPlans"
+      @confirm="handleConfirmPlan"
+      class="mb-4"
+    />
 
     <!-- Tasks -->
     <div v-if="challenge?.tasks?.length" class="space-y-3">
@@ -71,6 +79,7 @@ import { useChallengeStore } from '../stores/challenge.store';
 import { api } from '../api/client';
 import HPMPBar from '../components/challenge/HPMPBar.vue';
 import TaskCard from '../components/challenge/TaskCard.vue';
+import PlanSelector from '../components/challenge/PlanSelector.vue';
 import CityPulseBar from '../components/city/CityPulseBar.vue';
 import RouteCard from '../components/city/RouteCard.vue';
 import type { ShopRecommendation } from '../components/shop/ShopCard.vue';
@@ -161,6 +170,16 @@ onMounted(async () => {
     getLocation();
   }
 });
+
+async function handleConfirmPlan(planIndex: number) {
+  if (!challenge.value) return;
+  challenge.value = await store.confirmPlan(
+    challenge.value.id,
+    planIndex,
+    userLat.value,
+    userLng.value,
+  ) as Challenge;
+}
 
 async function completeTask(taskId: string) {
   if (!challenge.value) return;

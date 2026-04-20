@@ -158,9 +158,19 @@ export class ShopsService {
     const distance =
       userLat && userLng ? this.haversine(userLat, userLng, lat, lng) : 0;
 
+    // Fix fake placeholder URLs — replaced with real dianping search
+    const rawUrl = shop.externalUrl;
+    const isFakePlaceholder =
+      rawUrl &&
+      (/\/shop\/sh_lh_\d+$/.test(rawUrl) ||
+        /\/meishi\/sh_lh_\d+$/.test(rawUrl));
+    const externalUrl = isFakePlaceholder
+      ? `https://m.dianping.com/search/keyword/1/0_${encodeURIComponent(shop.name)}`
+      : rawUrl;
+
     let platform: 'dianping' | 'meituan' | 'unknown' = 'unknown';
-    if (shop.externalUrl?.includes('dianping.com')) platform = 'dianping';
-    else if (shop.externalUrl?.includes('meituan.com')) platform = 'meituan';
+    if (externalUrl?.includes('dianping.com')) platform = 'dianping';
+    else if (externalUrl?.includes('meituan.com')) platform = 'meituan';
 
     return {
       id: shop.id,
@@ -178,7 +188,7 @@ export class ShopsService {
       rating: shop.rating ? parseFloat(shop.rating as unknown as string) : null,
       discountTypes: shop.discountTypes ?? [],
       discounts: shop.discounts ?? {},
-      externalUrl: shop.externalUrl,
+      externalUrl,
       platform,
       openHours: shop.openHours ?? {},
     };

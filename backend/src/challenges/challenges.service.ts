@@ -13,11 +13,19 @@ import { AmapService } from '../transit/amap.service';
 
 @Injectable()
 export class ChallengesService {
+  private static readonly POINTS_MULTIPLIER: Record<string, number> = {
+    '地狱': 3,
+    '普通': 2,
+    '简单': 1,
+  };
+
   constructor(
     @InjectRepository(Challenge)
     private readonly challenges: Repository<Challenge>,
     @InjectRepository(ChallengeTask)
     private readonly tasks: Repository<ChallengeTask>,
+    @InjectRepository(User)
+    private readonly users: Repository<User>,
     private readonly shops: ShopsService,
     private readonly ai: AIProviderFactory,
     private readonly cityPulse: CityPulseService,
@@ -90,7 +98,7 @@ export class ChallengesService {
 
     for await (const chunk of this.ai.streamChallenge({
       rawText: challenge.inputText,
-      budget: challenge.budget,
+      budget: challenge.budget != null ? parseFloat(challenge.budget as any) : null,
       peopleCount: challenge.peopleCount,
       city: challenge.city,
       shopContext,
@@ -107,45 +115,22 @@ export class ChallengesService {
     }
 
     const output: ChallengeOutput = JSON.parse(buffer);
-    const shopRecs = await this.persistTasks(challenge, output, lat, lng);
 
-    for (const rec of shopRecs) {
-      if (rec.recommendations.length > 0) {
-        yield `event: shop_matched\ndata: ${JSON.stringify({
-          taskIndex: rec.taskIndex,
-          shops: rec.recommendations,
-        })}\n\n`;
+    // Save all plans to DB so confirm-plan can access them later
+    challenge.allPlans = output.plans;
+    await this.challenges.save(challenge);
 
-        for (const shop of rec.recommendations) {
-          if (shop.externalUrl) {
-            yield `event: booking_ready\ndata: ${JSON.stringify({
-              taskIndex: rec.taskIndex,
-              shopId: shop.id,
-              shopName: shop.name,
-              bookingUrl: shop.externalUrl,
-            })}\n\n`;
-          }
-        }
-      }
-    }
-
-    if (lat && lng && shopRecs.length > 0) {
-      const firstShop = shopRecs[0]?.recommendations[0];
-      if (firstShop && firstShop.lat && firstShop.lng) {
-        try {
-          const route = await this.amap.getWalkingRoute(
-            { lat, lng },
-            { lat: firstShop.lat, lng: firstShop.lng },
-          );
-          yield `event: route_ready\ndata: ${JSON.stringify({
-            shopId: firstShop.id,
-            route,
-          })}\n\n`;
-        } catch {
-          // route is optional, skip silently
-        }
-      }
-    }
+    const planSummaries = output.plans.map((p) => ({
+      id: p.id,
+      title: p.title,
+      difficulty: p.difficulty,
+      hp: p.hp,
+      mp: p.mp,
+      estimatedSave: p.estimatedSave,
+      estimatedSpend: p.estimatedSpend,
+      taskCount: p.tasks.length,
+    }));
+    yield `event: plans_ready\ndata: ${JSON.stringify({ plans: planSummaries })}\n\n`;
 
     yield `event: complete\ndata: ${JSON.stringify({ challengeId })}\n\n`;
   }
@@ -185,14 +170,47 @@ export class ChallengesService {
     if (!challenge) throw new NotFoundException();
     challenge.status = ChallengeStatus.COMPLETED;
     challenge.savedAmount = savedAmount;
+
+    const multiplier = ChallengesService.POINTS_MULTIPLIER[challenge.difficulty ?? '普通'] ?? 1;
+    const estimatedSave = parseFloat(String(challenge.estimatedSave ?? 0));
+    const points = Math.round(estimatedSave * multiplier);
+    challenge.pointsEarned = points;
+
+    const user = challenge.user;
+    user.points = (user.points ?? 0) + points;
+    await this.users.save(user);
+
     return this.challenges.save(challenge);
   }
 
-  private parseBasics(text: string): { budget: number; peopleCount: number } {
+  async confirmPlan(
+    challengeId: string,
+    userId: string,
+    planIndex: number,
+    lat?: number,
+    lng?: number,
+  ) {
+    const challenge = await this.challenges.findOne({
+      where: { id: challengeId, user: { id: userId } },
+      relations: ['user'],
+    });
+    if (!challenge) throw new NotFoundException();
+    if (!challenge.allPlans?.length) throw new NotFoundException('Plans not ready');
+
+    const idx = Math.max(0, Math.min(planIndex, challenge.allPlans.length - 1));
+    const selectedPlan = challenge.allPlans[idx];
+    challenge.difficulty = selectedPlan.difficulty;
+    challenge.estimatedSave = selectedPlan.estimatedSave;
+    await this.challenges.save(challenge);
+    await this.persistTasks(challenge, { plans: challenge.allPlans }, lat, lng, idx);
+    return this.findWithTasks(challengeId, userId);
+  }
+
+  private parseBasics(text: string): { budget: number | null; peopleCount: number } {
     const budgetMatch = text.match(/(\d+)\s*元/);
     const peopleMatch = text.match(/(\d+)\s*[人个]/);
     return {
-      budget: budgetMatch ? parseFloat(budgetMatch[1]) : 100,
+      budget: budgetMatch ? parseFloat(budgetMatch[1]) : null,
       peopleCount: peopleMatch ? parseInt(peopleMatch[1], 10) : 1,
     };
   }
@@ -275,8 +293,9 @@ export class ChallengesService {
     output: ChallengeOutput,
     lat?: number,
     lng?: number,
+    planIndex = 0,
   ): Promise<Array<{ taskIndex: number; recommendations: any[] }>> {
-    const firstPlan = output.plans[0];
+    const firstPlan = output.plans[planIndex];
     if (!firstPlan) return [];
 
     const budget = challenge.budget
@@ -310,9 +329,27 @@ export class ChallengesService {
             );
             task.shopRecommendations = recs;
             shopResults.push({ taskIndex: i, recommendations: recs });
+
+            const firstShop = recs[0];
+            if (firstShop) {
+              const links: import('./ai/ai-provider.interface').ActionLink[] = [];
+              if (firstShop.externalUrl) {
+                links.push({ type: 'book', label: '去美团预约', url: firstShop.externalUrl });
+              }
+              if (firstShop.lat && firstShop.lng) {
+                const navUrl = `https://uri.amap.com/navigation?to=${firstShop.lng},${firstShop.lat},${encodeURIComponent(firstShop.name)}&mode=walk&callnative=0`;
+                links.push({ type: 'nav', label: '高德导航', url: navUrl });
+              }
+              task.actionLinks = links;
+            }
           } catch {
             task.shopRecommendations = [];
           }
+        } else if (t.type === 'side') {
+          const q = encodeURIComponent(`${t.description} ${challenge.city}`);
+          task.actionLinks = [
+            { type: 'search', label: '搜索攻略', url: `https://www.xiaohongshu.com/search_result?keyword=${q}` },
+          ];
         }
 
         return task;

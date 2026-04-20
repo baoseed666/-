@@ -11,6 +11,7 @@ import {
 import { User } from '../users/user.entity';
 import { ChallengeTask } from './challenge-task.entity';
 import { BattleReport } from '../battle-reports/battle-report.entity';
+import { AiPlan } from './ai/ai-provider.interface';
 
 export enum ChallengeStatus {
   ACTIVE = 'active',
@@ -30,8 +31,8 @@ export class Challenge {
   @Column({ name: 'input_text' })
   inputText: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  budget: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, default: null })
+  budget: number | null;
 
   @Column({ name: 'people_count', default: 1 })
   peopleCount: number;
@@ -57,6 +58,18 @@ export class Challenge {
 
   @OneToMany(() => ChallengeTask, (t) => t.challenge, { cascade: true })
   tasks: ChallengeTask[];
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  difficulty: string | null;
+
+  @Column({ name: 'estimated_save', type: 'decimal', precision: 10, scale: 2, nullable: true, default: null })
+  estimatedSave: number | null;
+
+  @Column({ name: 'points_earned', type: 'int', default: 0 })
+  pointsEarned: number;
+
+  @Column({ name: 'all_plans', type: 'jsonb', nullable: true, default: null })
+  allPlans: AiPlan[] | null;
 
   @OneToOne(() => BattleReport, (r) => r.challenge)
   report: BattleReport;

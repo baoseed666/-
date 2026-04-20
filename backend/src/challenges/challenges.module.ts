@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Challenge } from './challenge.entity';
 import { ChallengeTask } from './challenge-task.entity';
+import { User } from '../users/user.entity';
 import { ChallengesService } from './challenges.service';
 import { ChallengesController } from './challenges.controller';
 import { AIProviderFactory } from './ai/ai-provider.factory';
@@ -11,7 +12,7 @@ import { TransitModule } from '../transit/transit.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Challenge, ChallengeTask]),
+    TypeOrmModule.forFeature([Challenge, ChallengeTask, User]),
     ShopsModule,
     CityModule,
     TransitModule,

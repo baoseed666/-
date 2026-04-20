@@ -28,8 +28,12 @@ ${input.eventsContext || '暂无特别活动'}
 `
     : '';
 
+  const budgetLine = input.budget != null
+    ? `预算：¥${input.budget}，人数：${input.peopleCount}人`
+    : `未指定预算，人数：${input.peopleCount}人（请为每套方案设定合理的estimatedSpend花费目标）`;
+
   return `用户需求：${input.rawText}
-预算：¥${input.budget}，人数：${input.peopleCount}人，区域：上海徐汇区龙华街道，时段：${input.timeOfDay}
+${budgetLine}，区域：上海徐汇区龙华街道，时段：${input.timeOfDay}
 ${citySection}
 【可用店铺（按距离排序 Top15）】
 ${input.shopContext}
@@ -42,9 +46,10 @@ ${input.shopContext}
     "id": "plan_1",
     "title": "方案标题",
     "difficulty": "地狱",
-    "hp": ${input.budget},
+    "hp": ${input.budget ?? 100},
     "mp": 3,
-    "estimatedSave": 数字,
+    "estimatedSpend": 实际预计花费金额,
+    "estimatedSave": 相比正常消费省下的金额,
     "tasks": [
       {"type":"main","description":"任务描述","tips":["技巧1","技巧2"],"shopHint":"店铺名称或null"},
       {"type":"side","description":"任务描述","tips":["技巧"],"shopHint":null},

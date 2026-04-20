@@ -44,12 +44,30 @@
     <div v-else-if="task.type === 'main'" class="mt-2 text-xs text-arcade-muted italic" data-testid="no-shops-hint">
       💡 位置未知或该城市暂无店铺数据，请手动搜索
     </div>
+
+    <!-- 行动按钮 -->
+    <div v-if="task.actionLinks?.length" class="flex flex-wrap gap-2 mt-3">
+      <a
+        v-for="link in task.actionLinks"
+        :key="link.url"
+        :href="link.url"
+        target="_blank"
+        rel="noopener"
+        class="text-xs px-3 py-1 rounded border border-arcade-gold text-arcade-gold hover:bg-arcade-gold hover:text-arcade-black transition-colors"
+      >{{ actionIcon(link.type) }} {{ link.label }}</a>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import ShopCard, { type ShopRecommendation } from '../shop/ShopCard.vue';
+
+interface ActionLink {
+  type: string;
+  label: string;
+  url: string;
+}
 
 interface Task {
   id: string;
@@ -59,6 +77,7 @@ interface Task {
   tips?: string[];
   shop?: { name: string };
   shopRecommendations?: ShopRecommendation[];
+  actionLinks?: ActionLink[];
 }
 
 const props = defineProps<{ task: Task }>();
@@ -68,4 +87,8 @@ const hasShopRecs = computed(() => (props.task.shopRecommendations?.length ?? 0)
 
 const typeLabel = computed(() => ({ main: '🎯 主线任务', side: '⚡ 支线任务', hidden: '🏆 隐藏成就' }[props.task.type as 'main' | 'side' | 'hidden'] ?? props.task.type));
 const badgeClass = computed(() => ({ main: 'border-arcade-green text-arcade-green', side: 'border-arcade-gold text-arcade-gold', hidden: 'border-arcade-blue text-arcade-blue' }[props.task.type as 'main' | 'side' | 'hidden'] ?? ''));
+
+function actionIcon(type: string) {
+  return { book: '📅', nav: '🗺️', group: '👥', student: '🎓', search: '🔍' }[type] ?? '🔗';
+}
 </script>

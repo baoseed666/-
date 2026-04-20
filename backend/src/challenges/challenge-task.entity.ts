@@ -8,6 +8,7 @@ import {
 import { Challenge } from './challenge.entity';
 import { Shop } from '../shops/shop.entity';
 import { ShopRecommendation } from '../shops/shops.service';
+import { ActionLink } from './ai/ai-provider.interface';
 
 export enum TaskType {
   MAIN = 'main',
@@ -45,6 +46,9 @@ export class ChallengeTask {
   /** AI匹配的真实店铺推荐列表（含图片/距离/优惠/外链） */
   @Column({ name: 'shop_recommendations', type: 'jsonb', default: '[]' })
   shopRecommendations: ShopRecommendation[];
+
+  @Column({ name: 'action_links', type: 'jsonb', default: '[]' })
+  actionLinks: ActionLink[];
 
   @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.PENDING })
   status: TaskStatus;

@@ -71,4 +71,36 @@ export class BattleReportsService {
     if (!report) throw new NotFoundException('Battle report not found');
     return report;
   }
+
+  async getPeriodStats(userId: string) {
+    const all = await this.challengeRepo.find({
+      where: { user: { id: userId }, status: ChallengeStatus.COMPLETED },
+    });
+
+    const now = new Date();
+    const startOf = (unit: 'day' | 'week' | 'month' | 'year'): Date => {
+      const d = new Date(now);
+      if (unit === 'day') { d.setHours(0, 0, 0, 0); }
+      else if (unit === 'week') { d.setDate(d.getDate() - d.getDay()); d.setHours(0, 0, 0, 0); }
+      else if (unit === 'month') { d.setDate(1); d.setHours(0, 0, 0, 0); }
+      else { d.setMonth(0, 1); d.setHours(0, 0, 0, 0); }
+      return d;
+    };
+
+    const agg = (cutoff: Date) => {
+      const filtered = all.filter((c) => new Date(c.createdAt) >= cutoff);
+      return {
+        saved: Math.round(filtered.reduce((s, c) => s + parseFloat(String(c.savedAmount)), 0) * 100) / 100,
+        count: filtered.length,
+        points: filtered.reduce((s, c) => s + (c.pointsEarned ?? 0), 0),
+      };
+    };
+
+    return {
+      daily:   agg(startOf('day')),
+      weekly:  agg(startOf('week')),
+      monthly: agg(startOf('month')),
+      yearly:  agg(startOf('year')),
+    };
+  }
 }

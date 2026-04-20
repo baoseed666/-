@@ -15,6 +15,7 @@
       <div>
         <h4 class="text-sm font-bold text-white">{{ event.name }}</h4>
         <div class="text-xs text-arcade-muted mt-0.5">{{ event.neighborhood }}</div>
+        <p v-if="event.description" class="text-xs text-arcade-muted/80 mt-1 leading-relaxed">{{ event.description }}</p>
       </div>
     </div>
 
@@ -45,6 +46,7 @@ export interface PulseEvent {
   costHigh: number;
   tags: string[];
   bookingUrl: string;
+  description?: string;
 }
 
 defineProps<{

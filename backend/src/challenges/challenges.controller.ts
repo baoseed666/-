@@ -70,6 +70,23 @@ export class ChallengesController {
     return this.challenges.updateTaskStatus(id, taskId, user.id, dto.status);
   }
 
+  @Post(':id/confirm-plan')
+  confirmPlan(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body('planIndex') planIndex: number,
+    @Query('lat') lat: string,
+    @Query('lng') lng: string,
+  ) {
+    return this.challenges.confirmPlan(
+      id,
+      user.id,
+      planIndex ?? 0,
+      lat ? parseFloat(lat) : undefined,
+      lng ? parseFloat(lng) : undefined,
+    );
+  }
+
   @Post(':id/complete')
   complete(
     @Param('id') id: string,

@@ -41,6 +41,9 @@ export class User {
   @Column({ name: 'rank_title', default: '消费韭菜' })
   rankTitle: string;
 
+  @Column({ type: 'int', default: 0 })
+  points: number;
+
   @OneToMany(() => Challenge, (c) => c.user)
   challenges: Challenge[];
 

@@ -27,6 +27,11 @@ export class BattleReportsController {
     return this.battleReports.generate(challengeId, user.id);
   }
 
+  @Get('my-stats')
+  myStats(@CurrentUser() user: User) {
+    return this.battleReports.getPeriodStats(user.id);
+  }
+
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.battleReports.findById(id);

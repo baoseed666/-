@@ -1,10 +1,8 @@
 <template>
-  <a
-    :href="shop.externalUrl ?? '#'"
-    :target="shop.externalUrl ? '_blank' : '_self'"
-    rel="noopener noreferrer"
-    class="shop-card block rounded border border-arcade-border bg-arcade-dim hover:border-arcade-gold transition-all duration-200 overflow-hidden group"
+  <div
+    class="shop-card block rounded border border-arcade-border bg-arcade-dim hover:border-arcade-gold transition-all duration-200 overflow-hidden group cursor-pointer"
     data-testid="shop-card"
+    @click="openExternal"
   >
     <div class="flex gap-3 p-3">
       <!-- 封面图 -->
@@ -76,11 +74,19 @@
       </div>
     </div>
 
-    <!-- 人均价格 -->
-    <div v-if="shop.avgPrice" class="px-3 pb-2 text-xs text-arcade-muted">
-      人均 <span class="text-arcade-gold font-bold">¥{{ shop.avgPrice }}</span>
+    <!-- 人均价格 + 高德导航 -->
+    <div class="flex items-center justify-between px-3 pb-2">
+      <div v-if="shop.avgPrice" class="text-xs text-arcade-muted">
+        人均 <span class="text-arcade-gold font-bold">¥{{ shop.avgPrice }}</span>
+      </div>
+      <div v-else />
+      <button
+        @click.stop="openNav"
+        class="text-xs px-2 py-0.5 rounded bg-arcade-green/10 border border-arcade-green/40 text-arcade-green hover:bg-arcade-green hover:text-arcade-black transition-colors"
+        title="高德地图导航"
+      >🗺️ 导航</button>
     </div>
-  </a>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -106,6 +112,17 @@ export interface ShopRecommendation {
 const props = defineProps<{ shop: ShopRecommendation }>();
 
 const discountDetails = computed(() => Object.values(props.shop.discounts ?? {}));
+
+function openExternal() {
+  const url = props.shop.externalUrl;
+  if (url) window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function openNav() {
+  const name = encodeURIComponent(props.shop.name);
+  const url = `https://uri.amap.com/navigation?to=${props.shop.lng},${props.shop.lat},${name}&mode=walking&src=koumen&coordinate=wgs84&callnative=0`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
 
 const platformBadge = computed(() => {
   if (props.shop.platform === 'dianping') return { label: '点评', cls: 'text-orange-400 border border-orange-400/40 bg-orange-400/10' };

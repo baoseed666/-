@@ -172,7 +172,7 @@ const SEED_SHOPS: SeedShop[] = [
     imageUrl: 'https://p0.meituan.net/brandlogons/kaiji.jpg',
     discountTypes: ['促销'],
     discounts: { 促销: '下午3点后买一送一' },
-    externalUrl: 'https://www.dianping.com/shop/sh_lh_008',
+    externalUrl: 'https://m.dianping.com/shop/608792543',
     platform: 'dianping',
     openHours: { weekday: '09:00-21:00', weekend: '09:00-21:30' },
     externalId: 'sh_lh_008',
@@ -363,7 +363,7 @@ const SEED_SHOPS: SeedShop[] = [
     imageUrl: 'https://p0.meituan.net/brandlogons/mstand.jpg',
     discountTypes: ['神券'],
     discounts: { 神券: '首杯新客立减8元' },
-    externalUrl: 'https://www.dianping.com/shop/sh_lh_018',
+    externalUrl: 'https://www.dianping.com/shop/l9D3vzOotV3zBBgr',
     platform: 'dianping',
     openHours: { weekday: '08:00-22:00', weekend: '08:30-22:00' },
     externalId: 'sh_lh_018',
@@ -477,7 +477,7 @@ const SEED_SHOPS: SeedShop[] = [
     imageUrl: 'https://p0.meituan.net/brandlogons/santi.jpg',
     discountTypes: ['促销'],
     discounts: { 促销: '工作日立减30元' },
-    externalUrl: 'https://www.dianping.com/shop/sh_lh_024',
+    externalUrl: 'https://m.dianping.com/shop/1822266361',
     platform: 'dianping',
     openHours: { weekday: '10:00-21:00', weekend: '10:00-21:30' },
     externalId: 'sh_lh_024',
@@ -497,7 +497,7 @@ const SEED_SHOPS: SeedShop[] = [
     imageUrl: 'https://p0.meituan.net/brandlogons/bluebottle.jpg',
     discountTypes: [],
     discounts: {},
-    externalUrl: 'https://www.dianping.com/shop/sh_lh_025',
+    externalUrl: 'https://m.dianping.com/shop/533445205',
     platform: 'dianping',
     openHours: { weekday: '08:00-22:00', weekend: '08:00-22:00' },
     externalId: 'sh_lh_025',
@@ -706,7 +706,7 @@ const SEED_SHOPS: SeedShop[] = [
     imageUrl: 'https://p0.meituan.net/brandlogons/sfc.jpg',
     discountTypes: ['促销'],
     discounts: { 促销: '早鸟票9折' },
-    externalUrl: 'https://www.dianping.com/shop/sh_lh_036',
+    externalUrl: 'https://m.dianping.com/shop/1090158882',
     platform: 'dianping',
     openHours: { weekday: '19:00-23:00', weekend: '14:00-23:00' },
     externalId: 'sh_lh_036',
@@ -744,7 +744,7 @@ const SEED_SHOPS: SeedShop[] = [
     imageUrl: 'https://p0.meituan.net/brandlogons/on.jpg',
     discountTypes: [],
     discounts: { 特色: '体验跑步活动免费' },
-    externalUrl: 'https://www.dianping.com/shop/sh_lh_038',
+    externalUrl: 'https://m.dianping.com/shop/965095094',
     platform: 'dianping',
     openHours: { weekday: '10:00-22:00', weekend: '10:00-22:00' },
     externalId: 'sh_lh_038',
@@ -1034,9 +1034,8 @@ export class ShopSeedService implements OnApplicationBootstrap {
         ? (await this.shopRepo.findOne({ where: { city: '上海' } })) !== null
         : false;
     if (count > 0 && hasShanghai) {
-      this.logger.log(
-        `Shop table already has Shanghai data (${count} rows), skipping seed`,
-      );
+      this.logger.log(`Updating shop URLs for existing ${count} rows...`);
+      await this.updateKnownUrls();
       return;
     }
     if (count > 0) {
@@ -1080,7 +1079,18 @@ export class ShopSeedService implements OnApplicationBootstrap {
   }
 
   async reseed(): Promise<void> {
-    await this.shopRepo.clear();
+    await this.shopRepo.query('TRUNCATE shops CASCADE');
     await this.seedShops();
+  }
+
+  private async updateKnownUrls(): Promise<void> {
+    for (const s of SEED_SHOPS) {
+      if (!s.externalId) continue;
+      await this.shopRepo.update(
+        { externalId: s.externalId },
+        { externalUrl: s.externalUrl, address: s.address },
+      );
+    }
+    this.logger.log('Shop URLs updated from seed data');
   }
 }

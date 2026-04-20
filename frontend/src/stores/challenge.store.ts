@@ -6,6 +6,17 @@ import type { CityPulseData } from '../components/city/CityPulseBar.vue';
 import type { ShopRecommendation } from '../components/shop/ShopCard.vue';
 import type { WalkingRoute } from '../components/city/RouteCard.vue';
 
+export interface PlanSummary {
+  id: string;
+  title: string;
+  difficulty: '地狱' | '普通' | '简单';
+  hp: number;
+  mp: number;
+  estimatedSave: number;
+  estimatedSpend: number;
+  taskCount: number;
+}
+
 export const useChallengeStore = defineStore('challenge', () => {
   const current = ref<unknown>(null);
   const streaming = ref(false);
@@ -14,6 +25,7 @@ export const useChallengeStore = defineStore('challenge', () => {
   const actionQuery = ref<{ category: string; city: string; hasGps: boolean } | null>(null);
   const shopMatches = ref<Record<number, ShopRecommendation[]>>({});
   const route = ref<{ shopId: string; route: WalkingRoute } | null>(null);
+  const pendingPlans = ref<PlanSummary[]>([]);
 
   async function create(rawText: string) {
     const { data } = await api.challenges.create(rawText);
@@ -33,6 +45,7 @@ export const useChallengeStore = defineStore('challenge', () => {
     actionQuery.value = null;
     shopMatches.value = {};
     route.value = null;
+    pendingPlans.value = [];
 
     const auth = useAuthStore();
     const url = api.challenges.streamUrl(challengeId, lat, lng);
@@ -56,6 +69,10 @@ export const useChallengeStore = defineStore('challenge', () => {
         shops: ShopRecommendation[];
       };
       shopMatches.value = { ...shopMatches.value, [taskIndex]: shops };
+    });
+    es.addEventListener('plans_ready', (e) => {
+      const { plans } = JSON.parse((e as MessageEvent).data) as { plans: PlanSummary[] };
+      pendingPlans.value = plans;
     });
     es.addEventListener('booking_ready', () => {
       // booking URLs are embedded in shop.externalUrl — no extra state needed
@@ -85,6 +102,13 @@ export const useChallengeStore = defineStore('challenge', () => {
     await load(challengeId);
   }
 
+  async function confirmPlan(challengeId: string, planIndex: number, lat?: number, lng?: number) {
+    const { data } = await api.challenges.confirmPlan(challengeId, planIndex, lat, lng);
+    pendingPlans.value = [];
+    current.value = data;
+    return data;
+  }
+
   async function complete(challengeId: string, savedAmount: number) {
     const { data } = await api.challenges.complete(challengeId, savedAmount);
     return data;
@@ -92,7 +116,7 @@ export const useChallengeStore = defineStore('challenge', () => {
 
   return {
     current, streaming, streamChunks,
-    cityPulse, actionQuery, shopMatches, route,
-    create, startStream, load, updateTask, complete,
+    cityPulse, actionQuery, shopMatches, route, pendingPlans,
+    create, startStream, load, updateTask, confirmPlan, complete,
   };
 });
