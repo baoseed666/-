@@ -1,0 +1,29 @@
+<view class="container" wx:if="{{report}}">
+  <view class="rank-area">
+    <view class="rank-title text-gold bold">{{report.title || report.rank}}</view>
+    <view class="rank-sub text-muted text-sm mt-16">段位称号</view>
+  </view>
+
+  <view class="savings-area card mt-32">
+    <view class="savings-label text-muted text-sm">本次省下</view>
+    <view class="savings-amount text-green bold">¥{{report.savedAmount || report.saved_amount || 0}}</view>
+    <view class="percentile text-muted text-sm mt-16" wx:if="{{report.percentile}}">
+      超过了 <text class="text-gold">{{report.percentile}}%</text> 的抠门玩家
+    </view>
+  </view>
+
+  <view class="report-text card mt-16" wx:if="{{report.summary || report.content}}">
+    <view class="text-muted text-sm mb-16">AI 战报点评</view>
+    <view class="report-content">{{report.summary || report.content}}</view>
+  </view>
+
+  <view class="actions mt-32">
+    <button class="btn-primary" bindtap="share">分享战报</button>
+    <button class="btn-outline mt-16" bindtap="goLeaderboard">查看排行榜</button>
+    <button class="btn-outline mt-16" bindtap="goChallenge">再来一次</button>
+  </view>
+</view>
+
+<view class="loading-area flex-center" wx:if="{{!report}}">
+  <view class="text-muted">加载战报中...</view>
+</view>

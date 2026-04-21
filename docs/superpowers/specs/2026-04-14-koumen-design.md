@@ -360,6 +360,69 @@ GET  /admin/scraper/status       队列状态
 ## 10. 范围外（不做）
 
 - 真实返现系统
-- 微信小程序原生开发（H5 即可）
 - 内容审核后台
 - 多语言 i18n
+
+---
+
+## 12. 情绪Agent模块规格（来自HuaClaw花爪）
+
+### 12.1 背景
+整合团队成员 HuaClaw 项目的三大 Agent 能力，增强产品竞争力。
+
+### 12.2 三大 Agent
+
+**Agent 1 — 情绪消费场景Agent**
+- 痛点：年轻人消费为情绪而非功能，但平台无法识别"仅今天想和ta社交"类需求
+- 流程：性格测试（5题）→ AI生成情绪标签 → 场景路线推荐 → 打卡积分
+- 测试维度：图像偏好/社交偏好/社交形式/时间预算
+- 输出：情绪标签（例："那份孤独美社交感"）+ 场景路线（含时间/地点/活动/费用）
+
+**Agent 2 — 省钱Agent（增强现有ChallengeModule）**
+- 与现有ChallengeModule高度融合，增加：优惠聚合上下文注入、自动执行提示（Demo版）
+- 输入原有消费路线 → 匹配可用优惠 → 输出省钱版路线+预计节省金额
+
+**Agent 3 — 积分Agent**
+- 痛点：各商户积分孤岛，少量积分无法兑换
+- 功能：多店积分聚合展示、智能兑换提醒、"差N积分可省X元"激励
+- 增强现有 PointsView，展示积分价值分析
+
+### 12.3 EmotionModule 规格
+
+```
+POST /emotion/quiz          提交测试答案 → AI返回情绪标签+场景路线（SSE流式）
+GET  /emotion/routes        获取场景路线列表（按情绪标签过滤）
+POST /emotion/checkin       打卡签到 → 加积分（+10/次，每日上限3次）
+GET  /emotion/my-history    我的情绪测试历史
+```
+
+**数据模型：**
+```sql
+emotion_profiles (id, user_id FK, answers JSONB, emotion_label VARCHAR,
+                  route_summary TEXT, created_at)
+emotion_checkins (id, user_id FK, location_name VARCHAR, lat, lng,
+                  emotion_label VARCHAR, points_earned INT, created_at)
+```
+
+### 12.4 微信小程序规格
+
+**路径：** `D:/projects/抠门大王/miniprogram/`
+**技术：** 原生微信小程序（WXML/WXSS/JS）
+**后端：** 连接现有 NestJS API（同一后端）
+**认证：** SMS验证码登录（demo固定123456）+ 微信小程序OAuth（`/auth/wechat/miniprogram`）
+
+**页面结构：**
+```
+pages/
+├── index/          首页（三Agent入口 + 城市统计）
+├── login/          登录（手机号+验证码）
+├── emotion/        情绪测试主页
+├── emotion-result/ 情绪标签+路线结果
+├── challenge/      省钱挑战（输入+流式结果）
+├── report/         战报
+├── points/         积分钱包（积分联盟）
+├── leaderboard/    排行榜
+└── profile/        个人中心
+```
+
+**注意：** 微信小程序不支持SSE，challenge流式改为轮询（每1.5s GET /challenges/:id）。

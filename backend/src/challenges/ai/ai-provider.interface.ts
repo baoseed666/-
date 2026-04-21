@@ -14,7 +14,7 @@ export interface ChallengeInput {
 }
 
 export interface ActionLink {
-  type: 'book' | 'nav' | 'group' | 'student' | 'search';
+  type: 'book' | 'nav' | 'group' | 'student' | 'search' | 'video';
   label: string;
   url: string;
 }

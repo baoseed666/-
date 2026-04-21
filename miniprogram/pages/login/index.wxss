@@ -1,0 +1,78 @@
+.container {
+  padding: 80rpx 48rpx;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.logo-area {
+  text-align: center;
+  margin-bottom: 64rpx;
+}
+
+.logo {
+  font-size: 80rpx;
+  font-weight: bold;
+  letter-spacing: 4rpx;
+}
+
+.slogan {
+  margin-top: 12rpx;
+}
+
+.demo-tip {
+  background: #1a1a00;
+  border: 1rpx solid #ffdd0033;
+  border-radius: 8rpx;
+  padding: 16rpx;
+  margin-bottom: 32rpx;
+}
+
+.field {
+  margin-bottom: 8rpx;
+}
+
+.label {
+  margin-bottom: 12rpx;
+}
+
+.input-row {
+  display: flex;
+  gap: 16rpx;
+}
+
+.input {
+  flex: 1;
+  background: #1a1a1a;
+  border: 1rpx solid #333;
+  border-radius: 8rpx;
+  padding: 20rpx 24rpx;
+  color: #fff;
+  font-size: 30rpx;
+}
+
+.placeholder {
+  color: #444;
+}
+
+.btn-sms {
+  background: transparent;
+  border: 1rpx solid #ffdd00;
+  color: #ffdd00;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  padding: 0 20rpx;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-sms[disabled] {
+  border-color: #333;
+  color: #444;
+}
+
+.btn-sms-sent {
+  border-color: #333;
+  color: #666;
+}

@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { SmsSendDto } from './dto/sms-send.dto';
 import { SmsVerifyDto } from './dto/sms-verify.dto';
 import { WechatCallbackDto } from './dto/wechat-callback.dto';
+import { WechatMiniprogramDto } from './dto/wechat-miniprogram.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
@@ -23,6 +24,11 @@ export class AuthController {
   @Post('wechat/callback')
   wechatCallback(@Body() dto: WechatCallbackDto) {
     return this.auth.wechatCallback(dto.code);
+  }
+
+  @Post('wechat/miniprogram')
+  wechatMiniprogram(@Body() dto: WechatMiniprogramDto) {
+    return this.auth.wechatMiniprogram(dto.code, dto.userInfo);
   }
 
   @Post('refresh')

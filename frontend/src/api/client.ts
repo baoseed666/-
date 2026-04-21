@@ -1,6 +1,16 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth.store';
 
+export interface ExchangeChannel {
+  id: string;
+  name: string;
+  description: string;
+  pointsCost: number;
+  value: string;
+  category: string;
+  jumpUrl: string;
+}
+
 const client = axios.create({ baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000' });
 
 client.interceptors.request.use((config) => {
@@ -77,5 +87,14 @@ export const api = {
     get: (city: string) => client.get('/leaderboard', { params: { city } }),
     cityStats: (city: string) => client.get('/stats/city', { params: { city } }),
     heatmap: (city: string) => client.get('/heatmap', { params: { city } }),
+  },
+  users: {
+    myPoints: () => client.get<{ points: number; channels: ExchangeChannel[] }>('/users/me/points'),
+  },
+  emotion: {
+    checkin: (data: { locationName: string; lat: number; lng: number; emotionLabel: string }) =>
+      client.post<{ pointsEarned: number }>('/emotion/checkin', data),
+    myHistory: () => client.get('/emotion/my-history'),
+    quizStreamUrl: () => `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/emotion/quiz`,
   },
 };

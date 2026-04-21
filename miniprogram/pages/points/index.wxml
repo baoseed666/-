@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="points-hero card">
+    <view class="points-label text-muted text-sm">我的积分</view>
+    <view class="points-number text-gold bold">{{points}}</view>
+    <view class="points-sub text-muted text-sm">约等于 ¥{{pointsValue}} 现金</view>
+  </view>
+
+  <view class="earn-section mt-32">
+    <view class="section-title bold mb-16">获得积分</view>
+    <view class="earn-grid">
+      <view class="earn-item card">
+        <view class="earn-icon">⚔️</view>
+        <view class="earn-name text-sm">完成挑战</view>
+        <view class="earn-pts text-gold text-sm">+50积分</view>
+      </view>
+      <view class="earn-item card">
+        <view class="earn-icon">🎭</view>
+        <view class="earn-name text-sm">情绪打卡</view>
+        <view class="earn-pts text-gold text-sm">+10积分</view>
+      </view>
+      <view class="earn-item card">
+        <view class="earn-icon">📅</view>
+        <view class="earn-name text-sm">每日登录</view>
+        <view class="earn-pts text-gold text-sm">+5积分</view>
+      </view>
+      <view class="earn-item card">
+        <view class="earn-icon">🏆</view>
+        <view class="earn-name text-sm">登上榜单</view>
+        <view class="earn-pts text-gold text-sm">+100积分</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="redeem-section mt-32">
+    <view class="section-title bold mb-16">兑换渠道</view>
+    <view wx:for="{{redeemChannels}}" wx:key="id" class="redeem-card card flex-between" bindtap="openChannel" data-url="{{item.jumpUrl || item.url}}">
+      <view class="redeem-left">
+        <view class="redeem-icon">{{item.icon}}</view>
+        <view class="redeem-info">
+          <view class="redeem-name bold">{{item.name}}</view>
+          <view class="redeem-desc text-muted text-sm">{{item.description}}</view>
+        </view>
+      </view>
+      <view class="redeem-cost text-gold">{{item.pointsCost || item.points}}分</view>
+    </view>
+  </view>
+
+  <view class="alliance-tip card mt-16">
+    <view class="tip-title text-gold bold">🪙 积分联盟</view>
+    <view class="tip-body text-muted text-sm mt-16">积分可在联盟内所有合作商家通用，省钱、购物、餐饮一分不浪费。</view>
+  </view>
+</view>

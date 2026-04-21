@@ -25,7 +25,7 @@ export class LeaderboardService {
         'u.nickname  AS nickname',
         'u.avatarUrl AS "avatarUrl"',
         'u.rankTitle AS "rankTitle"',
-        'u.totalSaved::float AS "totalSaved"',
+        'u.total_saved::float AS "totalSaved"',
         'u.points    AS points',
       ])
       .groupBy('u.id')

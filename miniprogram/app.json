@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login/index",
+    "pages/emotion/index",
+    "pages/emotion-result/index",
+    "pages/challenge/index",
+    "pages/report/index",
+    "pages/points/index",
+    "pages/leaderboard/index",
+    "pages/profile/index",
+    "pages/webview/index"
+  ],
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#ffdd00",
+    "backgroundColor": "#0a0a0a",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "首页" },
+      { "pagePath": "pages/emotion/index", "text": "情绪" },
+      { "pagePath": "pages/points/index", "text": "积分" },
+      { "pagePath": "pages/profile/index", "text": "我的" }
+    ]
+  },
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#0a0a0a",
+    "navigationBarTitleText": "抠门大王",
+    "navigationBarTextStyle": "white"
+  }
+}

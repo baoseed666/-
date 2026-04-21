@@ -26,6 +26,9 @@ export default () => ({
     appId: process.env.WECHAT_APP_ID,
     appSecret: process.env.WECHAT_APP_SECRET,
     redirectUri: process.env.WECHAT_REDIRECT_URI,
+    miniAppId: process.env.WECHAT_MINI_APP_ID,
+    miniAppSecret: process.env.WECHAT_MINI_APP_SECRET,
+    demoMode: process.env.WECHAT_DEMO_MODE === 'true',
   },
   deepseek: {
     apiKey: process.env.DEEPSEEK_API_KEY,

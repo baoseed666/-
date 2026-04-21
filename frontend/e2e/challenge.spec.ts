@@ -122,12 +122,13 @@ test.describe('挑战正常流程（带位置）', () => {
     await expect(actions).toBeVisible();
 
     const buttons = actions.locator('button');
-    await expect(buttons).toHaveCount(3);
+    await expect(buttons).toHaveCount(4);
 
-    // 验证三个按钮分别对应点评/美团/导航
+    // 验证四个按钮分别对应点评/美团/导航/抖音
     await expect(buttons.nth(0)).toContainText('点评');
     await expect(buttons.nth(1)).toContainText('美团');
     await expect(buttons.nth(2)).toContainText('导航');
+    await expect(buttons.nth(3)).toContainText('抖音');
   }, 120000);
 
   test('完整链路：创建→城市脉冲→AI生成→完成任务→生成战报', async ({ page }) => {

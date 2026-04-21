@@ -1,0 +1,67 @@
+<view class="container">
+
+  <!-- 模式选择 -->
+  <view class="mode-select" wx:if="{{!modeSelected}}">
+    <view class="mode-title text-gold bold">省钱人格 SQTI</view>
+    <view class="mode-sub text-muted">测出你的情绪消费风格，解锁专属路线</view>
+    <view class="mode-cards">
+      <view class="mode-card card" bindtap="selectMode" data-mode="quick">
+        <view class="mode-icon">⚡</view>
+        <view class="mode-name bold">快速版</view>
+        <view class="mode-desc text-muted text-sm">5题 · 2分钟</view>
+        <view class="mode-tag text-gold text-sm">经典测试</view>
+      </view>
+      <view class="mode-card card" bindtap="selectMode" data-mode="deep">
+        <view class="mode-icon">🧬</view>
+        <view class="mode-name bold">深度版</view>
+        <view class="mode-desc text-muted text-sm">12题 · 5分钟</view>
+        <view class="mode-tag text-green text-sm">更精准</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 答题区 -->
+  <view wx:if="{{modeSelected && !analyzing}}">
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{(currentStep + 1) / questions.length * 100}}%"></view>
+    </view>
+    <view class="step-hint text-muted text-sm">{{currentStep + 1}} / {{questions.length}}</view>
+
+    <view class="question-area" wx:if="{{questions.length > 0}}">
+      <view class="question-text bold">{{questions[currentStep].question}}</view>
+      <view class="options">
+        <view
+          wx:for="{{questions[currentStep].options}}"
+          wx:key="index"
+          class="option-card card {{answers[currentStep] === index ? 'option-selected' : ''}}"
+          bindtap="selectOption"
+          data-index="{{index}}"
+        >
+          <text class="option-text">{{item}}</text>
+        </view>
+      </view>
+      <view class="nav-row">
+        <button class="btn-outline" wx:if="{{currentStep > 0}}" bindtap="prevStep">上一题</button>
+        <button class="btn-outline" wx:if="{{currentStep === 0}}" bindtap="backToMode">切换模式</button>
+        <view style="flex:1"></view>
+        <button
+          class="btn-primary"
+          disabled="{{answers[currentStep] === undefined}}"
+          bindtap="nextOrSubmit"
+        >
+          {{currentStep < questions.length - 1 ? '下一题' : '开始分析'}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分析中 -->
+  <view class="analyzing-area flex-center" wx:if="{{analyzing}}">
+    <view class="analyze-inner">
+      <view class="analyze-emoji">🧠</view>
+      <view class="analyze-text text-gold bold">AI 正在分析你的情绪...</view>
+      <view class="analyze-sub text-muted text-sm">为你匹配最适合的消费路线</view>
+    </view>
+  </view>
+
+</view>

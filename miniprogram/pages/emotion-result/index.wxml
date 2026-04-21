@@ -1,0 +1,72 @@
+<view class="container" wx:if="{{result}}">
+
+  <!-- SQTI 人格标签 -->
+  <view class="sqti-area">
+    <view class="sqti-tag text-gold bold">{{result.sqti_tag}}</view>
+    <view class="emotion-label bold">{{result.emotion_label}}</view>
+    <view class="sqti-desc text-muted text-sm">{{result.sqti_description}}</view>
+    <view class="emotion-desc text-muted mt-16">{{result.emotion_description}}</view>
+  </view>
+
+  <!-- 路线列表 -->
+  <view class="section-title bold mt-32">为你推荐的路线</view>
+
+  <view
+    wx:for="{{result.routes}}"
+    wx:key="index"
+    class="route-card card"
+  >
+    <view class="route-header flex-between" bindtap="toggleRoute" data-index="{{index}}">
+      <view class="route-left">
+        <view class="route-title bold">{{item.title}}</view>
+        <view class="route-meta text-sm mt-16">
+          <text class="text-muted">{{item.mood}}</text>
+          <text class="text-green ml-16">¥{{item.total_cost}}</text>
+        </view>
+      </view>
+      <view class="route-toggle text-muted">{{expandedRoute === index ? '▲' : '▼'}}</view>
+    </view>
+
+    <view class="route-stops" wx:if="{{expandedRoute === index}}">
+      <view
+        wx:for="{{item.stops}}"
+        wx:for-item="stop"
+        wx:key="index"
+        class="stop-item"
+      >
+        <view class="stop-header">
+          <text class="stop-time text-muted text-sm">{{stop.time}}</text>
+          <text class="stop-place bold ml-16">{{stop.place}}</text>
+          <text class="stop-cost text-green text-sm ml-16">¥{{stop.estimated_cost}}</text>
+        </view>
+        <view class="stop-activity text-muted text-sm">{{stop.activity}}</view>
+
+        <!-- 推荐店铺 -->
+        <view class="shops-row" wx:if="{{stop.recommended_shops && stop.recommended_shops.length > 0}}">
+          <view
+            wx:for="{{stop.recommended_shops}}"
+            wx:for-item="shop"
+            wx:key="index"
+            class="shop-chip"
+            bindtap="openShop"
+            data-url="{{shop.dianpingUrl}}"
+          >
+            <view class="shop-name text-sm">{{shop.name}}</view>
+            <view class="shop-meta text-sm">
+              <text class="text-gold" wx:if="{{shop.rating}}">★{{shop.rating}}</text>
+              <text class="text-muted ml-8" wx:if="{{shop.avgPrice}}">¥{{shop.avgPrice}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 打卡签到 -->
+  <view class="checkin-area mt-32">
+    <button class="btn-primary" bindtap="checkin" disabled="{{checkedIn}}">
+      {{checkedIn ? '✅ 已打卡 +10积分' : '📍 打卡签到 +10积分'}}
+    </button>
+  </view>
+
+</view>

@@ -8,6 +8,8 @@ import { ChallengeTask } from '../challenges/challenge-task.entity';
 import { BattleReport } from '../battle-reports/battle-report.entity';
 import { LbsRequest } from '../lbs/lbs-request.entity';
 import { CityEvent } from '../city/city-event.entity';
+import { EmotionProfile } from '../emotion/emotion-profile.entity';
+import { EmotionCheckin } from '../emotion/emotion-checkin.entity';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { CityEvent } from '../city/city-event.entity';
           BattleReport,
           LbsRequest,
           CityEvent,
+          EmotionProfile,
+          EmotionCheckin,
         ],
         synchronize: cfg.get('nodeEnv') === 'development',
         logging: false,

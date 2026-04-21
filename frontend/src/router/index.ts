@@ -10,6 +10,8 @@ const router = createRouter({
     { path: '/report/:id', component: () => import('../views/ReportView.vue'), meta: { requiresAuth: true } },
     { path: '/leaderboard', component: () => import('../views/LeaderboardView.vue'), meta: { requiresAuth: true } },
     { path: '/profile', component: () => import('../views/ProfileView.vue'), meta: { requiresAuth: true } },
+    { path: '/points', component: () => import('../views/PointsView.vue'), meta: { requiresAuth: true } },
+    { path: '/emotion', component: () => import('../views/EmotionView.vue'), meta: { requiresAuth: true } },
   ],
 });
 

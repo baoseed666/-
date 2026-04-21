@@ -1,0 +1,62 @@
+.container {
+  padding: 48rpx 32rpx 120rpx;
+}
+
+.header {
+  margin-bottom: 48rpx;
+}
+
+.title {
+  font-size: 72rpx;
+  letter-spacing: 4rpx;
+}
+
+.subtitle {
+  margin-top: 8rpx;
+  margin-bottom: 24rpx;
+}
+
+.stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 16rpx 24rpx;
+}
+
+.agents {
+  margin-bottom: 32rpx;
+}
+
+.agent-card {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 32rpx 24rpx;
+}
+
+.agent-icon {
+  font-size: 56rpx;
+  width: 72rpx;
+  text-align: center;
+}
+
+.agent-info {
+  flex: 1;
+}
+
+.agent-name {
+  font-size: 34rpx;
+  margin-bottom: 6rpx;
+}
+
+.agent-desc {
+  font-size: 26rpx;
+}
+
+.agent-arrow {
+  font-size: 48rpx;
+}
+
+.rank-bar {
+  padding: 20rpx 24rpx;
+}

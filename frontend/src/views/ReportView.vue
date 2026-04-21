@@ -91,8 +91,12 @@ onMounted(async () => {
   }
 });
 
-function download() {
+async function download() {
+  const resp = await fetch(imageUrl.value, { headers: { Authorization: `Bearer ${(await import('../stores/auth.store')).useAuthStore().accessToken}` } });
+  const blob = await resp.blob();
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = imageUrl.value; a.download = 'battle-report.png'; a.click();
+  a.href = url; a.download = 'battle-report.png'; a.click();
+  URL.revokeObjectURL(url);
 }
 </script>

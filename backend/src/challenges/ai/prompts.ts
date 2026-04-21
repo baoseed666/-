@@ -18,9 +18,18 @@ export const SYSTEM_PROMPT = `你是"抠门大王"AI挑战官。你的使命：�
 7. 隐藏成就必须揭示用户不知道的深度技巧（如"该店的会员日是周三，下单立减18%"或"附近某个平台刚上线的满减券未曝光"）。`;
 
 export function buildChallengePrompt(input: ChallengeInput): string {
+  const today = new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  }).format(new Date());
+
   const citySection = input.cityPulse
     ? `
 【城市实时状态】
+日期：${today}
 天气：${input.cityPulse.weather.icon} ${input.cityPulse.weather.desc} ${input.cityPulse.weather.temp}°C（${input.cityPulse.weather.suitable ? '适合出行' : '天气不佳，可考虑室内活动'}）
 当前人流：${CROWD_TEXT[input.cityPulse.crowdLevel] ?? input.cityPulse.crowdLevel}
 今日热点区域：${input.cityPulse.hotNeighborhood}
@@ -37,7 +46,7 @@ ${input.eventsContext || '暂无特别活动'}
   return `用户需求：${input.rawText}
 ${budgetLine}区域：上海徐汇区龙华街道，时段：${input.timeOfDay}
 ${citySection}
-【附近可用店铺（按距离排序 Top15，含评分/优惠）】
+【附近可用店铺（按活动类型分组，AI应为每种活动类型都推荐对应店铺）】
 ${input.shopContext}
 
 请生成3套省钱方案（地狱/普通/简单各一套）。要求：
@@ -45,7 +54,7 @@ ${input.shopContext}
 - 普通方案：正常省钱，合理利用团购/折扣，平衡体验和省钱
 - 简单方案：轻松省钱，利用会员/积分/满减，几乎无门槛
 
-每套方案包含：主线任务1个（具体去哪家店、怎么省钱）、支线任务1个（额外省钱技巧）、隐藏成就1个（大多数人不知道的深度技巧）。
+每套方案包含：主线任务若干个（每种活动需求对应一个 main 任务，覆盖用户所有活动，具体去哪家店、怎么省钱）、支线任务1个（额外省钱技巧）、隐藏成就1个（大多数人不知道的深度技巧）。
 
 充分利用上方的城市实时信息和店铺数据，直接点名推荐具体店铺。
 

@@ -1,0 +1,34 @@
+<view class="container">
+  <view class="city-card card">
+    <view class="city-title bold">🏙️ 上海抠门榜</view>
+    <view class="city-stats flex-between mt-16" wx:if="{{cityStats}}">
+      <view class="city-stat">
+        <view class="city-stat-val text-gold bold">{{cityStats.userCount || 0}}</view>
+        <view class="city-stat-label text-muted text-sm">参与人数</view>
+      </view>
+      <view class="city-stat">
+        <view class="city-stat-val text-green bold">¥{{cityStats.totalSaved || 0}}</view>
+        <view class="city-stat-label text-muted text-sm">总省金额</view>
+      </view>
+      <view class="city-stat">
+        <view class="city-stat-val text-gold bold">{{cityStats.avgSaved || 0}}</view>
+        <view class="city-stat-label text-muted text-sm">人均省(元)</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="list-area mt-16">
+    <view wx:for="{{list}}" wx:key="rank" class="rank-item card flex-between">
+      <view class="rank-no {{index < 3 ? 'rank-top' : ''}}">
+        {{index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : item.rank || (index + 1)}}
+      </view>
+      <view class="rank-info flex-1">
+        <view class="rank-name bold">{{item.nickname || item.name || '匿名玩家'}}</view>
+        <view class="rank-title-tag text-muted text-sm">{{item.title || item.rank_title || ''}}</view>
+      </view>
+      <view class="rank-amount text-green bold">¥{{item.totalSaved || item.total_saved || 0}}</view>
+    </view>
+
+    <view class="empty text-muted text-center" wx:if="{{!list.length}}">暂无数据</view>
+  </view>
+</view>

@@ -160,6 +160,28 @@ export class ShopsService {
     return this.recommendShops({ city, category, lat, lng, budget, limit: 3 });
   }
 
+  async findByHint(
+    hint: string,
+    city: string,
+    lat?: number,
+    lng?: number,
+  ): Promise<ShopRecommendation | null> {
+    const dbShop = await this.repo
+      .createQueryBuilder('s')
+      .where('s.city = :city', { city })
+      .andWhere('s.name ILIKE :hint', { hint: `%${hint}%` })
+      .getOne();
+    if (dbShop) return this.toRecommendation(dbShop, lat, lng);
+
+    if (lat && lng) {
+      const pois = await this.amap.searchPOINearby({
+        lat, lng, keywords: hint, radius: 5000, limit: 3,
+      });
+      if (pois.length > 0) return this.poiToRecommendation(pois[0], lat, lng, 'amap');
+    }
+    return null;
+  }
+
   // ── Private helpers ──────────────────────────────────────────
 
   /** 并行调用高德 + 百度 POI，按店名去重后返回 */

@@ -1,0 +1,46 @@
+<view class="container">
+  <view class="header">
+    <view class="title text-gold bold">抠门大王</view>
+    <view class="subtitle text-muted text-sm">聪明消费，快乐省钱</view>
+    <view class="stats-bar card" wx:if="{{cityStats}}">
+      <text class="text-sm text-muted">今日上海已有 </text>
+      <text class="text-gold bold">{{cityStats.userCount}}</text>
+      <text class="text-sm text-muted"> 人省下 </text>
+      <text class="text-green bold">¥{{cityStats.totalSaved}}</text>
+    </view>
+  </view>
+
+  <view class="agents">
+    <view class="agent-card card" bindtap="goEmotion">
+      <view class="agent-icon">🎭</view>
+      <view class="agent-info">
+        <view class="agent-name bold">情绪探索</view>
+        <view class="agent-desc text-muted text-sm">测测今天适合什么消费路线</view>
+      </view>
+      <view class="agent-arrow text-muted">›</view>
+    </view>
+
+    <view class="agent-card card" bindtap="goChallenge">
+      <view class="agent-icon">⚔️</view>
+      <view class="agent-info">
+        <view class="agent-name bold">省钱挑战</view>
+        <view class="agent-desc text-muted text-sm">输入需求，AI帮你省到极致</view>
+      </view>
+      <view class="agent-arrow text-muted">›</view>
+    </view>
+
+    <view class="agent-card card" bindtap="goPoints">
+      <view class="agent-icon">🪙</view>
+      <view class="agent-info">
+        <view class="agent-name bold">积分联盟</view>
+        <view class="agent-desc text-muted text-sm">跨店积分，一分不浪费</view>
+      </view>
+      <view class="agent-arrow text-muted">›</view>
+    </view>
+  </view>
+
+  <view class="rank-bar card flex-between" wx:if="{{rank}}">
+    <text class="text-muted text-sm">我的段位</text>
+    <text class="text-gold bold">{{rank}}</text>
+  </view>
+</view>

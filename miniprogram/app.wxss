@@ -1,0 +1,55 @@
+page {
+  background: #0a0a0a;
+  color: #ffffff;
+  font-family: -apple-system, sans-serif;
+  min-height: 100vh;
+}
+
+.card {
+  background: #111111;
+  border: 1rpx solid #2a2a2a;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.btn-primary {
+  background: #ffdd00;
+  color: #000000;
+  font-weight: bold;
+  border-radius: 8rpx;
+  padding: 20rpx 40rpx;
+  text-align: center;
+  display: block;
+  border: none;
+  font-size: 32rpx;
+}
+
+.btn-outline {
+  border: 2rpx solid #ffdd00;
+  color: #ffdd00;
+  border-radius: 8rpx;
+  padding: 16rpx 32rpx;
+  background: transparent;
+  text-align: center;
+  display: block;
+  font-size: 32rpx;
+}
+
+.text-gold { color: #ffdd00; }
+.text-green { color: #00ff88; }
+.text-muted { color: #666666; }
+.text-sm { font-size: 24rpx; }
+.text-lg { font-size: 40rpx; }
+.text-xl { font-size: 56rpx; }
+
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.mt-16 { margin-top: 16rpx; }
+.mt-24 { margin-top: 24rpx; }
+.mt-32 { margin-top: 32rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.mb-32 { margin-bottom: 32rpx; }
+.p-32 { padding: 32rpx; }
+.bold { font-weight: bold; }

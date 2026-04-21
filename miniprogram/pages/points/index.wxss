@@ -1,0 +1,94 @@
+.container {
+  padding: 32rpx 32rpx 120rpx;
+}
+
+.points-hero {
+  text-align: center;
+  padding: 48rpx 32rpx;
+}
+
+.points-label {
+  margin-bottom: 16rpx;
+}
+
+.points-number {
+  font-size: 120rpx;
+  font-weight: bold;
+  line-height: 1.1;
+}
+
+.points-sub {
+  margin-top: 12rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+}
+
+.earn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+}
+
+.earn-item {
+  text-align: center;
+  padding: 32rpx 16rpx;
+}
+
+.earn-icon {
+  font-size: 48rpx;
+  margin-bottom: 12rpx;
+}
+
+.earn-name {
+  margin-bottom: 8rpx;
+  color: #ccc;
+}
+
+.earn-pts {
+  font-weight: bold;
+}
+
+.redeem-card {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx;
+}
+
+.redeem-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+}
+
+.redeem-icon {
+  font-size: 48rpx;
+  width: 60rpx;
+  text-align: center;
+}
+
+.redeem-name {
+  font-size: 30rpx;
+  margin-bottom: 4rpx;
+}
+
+.redeem-desc {
+  font-size: 24rpx;
+}
+
+.redeem-cost {
+  font-size: 32rpx;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.tip-title {
+  font-size: 34rpx;
+}
+
+.tip-body {
+  line-height: 1.8;
+}

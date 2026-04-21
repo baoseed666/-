@@ -26,6 +26,8 @@
       </div>
 
       <div class="flex gap-4 mt-6">
+        <router-link to="/emotion" class="text-arcade-muted hover:text-arcade-gold text-sm transition-colors">🎭 情绪探索</router-link>
+        <router-link to="/points" class="text-arcade-muted hover:text-arcade-gold text-sm transition-colors">🪙 积分</router-link>
         <router-link to="/leaderboard" class="text-arcade-muted hover:text-arcade-gold text-sm transition-colors">🏆 排行榜</router-link>
         <router-link to="/profile" class="text-arcade-muted hover:text-arcade-gold text-sm transition-colors">👤 我的</router-link>
       </div>

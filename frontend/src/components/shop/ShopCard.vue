@@ -86,6 +86,11 @@
         class="flex-1 py-2 text-xs text-center text-arcade-green hover:bg-arcade-green/10 transition-colors"
         title="高德导航"
       >🗺️ 导航</button>
+      <button
+        @click="openDouyin"
+        class="flex-1 py-2 text-xs text-center text-pink-400 hover:bg-pink-400/10 transition-colors"
+        title="抖音团购"
+      >🎵 抖音</button>
     </div>
   </div>
 </template>
@@ -135,6 +140,11 @@ function openMeituan() {
 function openNav() {
   const url = props.shop.amapNavUrl
     ?? `https://uri.amap.com/navigation?to=${props.shop.lng},${props.shop.lat},${encodeURIComponent(props.shop.name)}&mode=walk&callnative=0`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function openDouyin() {
+  const url = `https://www.douyin.com/search/${encodeURIComponent(props.shop.name + ' 上海龙华')}`;
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 

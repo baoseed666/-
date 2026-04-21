@@ -2,11 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import { Challenge } from '../challenges/challenge.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly repo: Repository<User>,
+    @InjectRepository(Challenge) private readonly challenges: Repository<Challenge>,
   ) {}
 
   findById(id: string) {
@@ -46,6 +48,15 @@ export class UsersService {
   updateRankTitle(id: string, totalSaved: number): Promise<User> {
     const rankTitle = this.computeRank(totalSaved);
     return this.repo.save({ id, totalSaved, rankTitle } as User);
+  }
+
+  getMyChallenges(userId: string) {
+    return this.challenges.find({
+      where: { user: { id: userId } },
+      select: ['id', 'inputText', 'status', 'savedAmount', 'pointsEarned', 'createdAt'],
+      order: { createdAt: 'DESC' },
+      take: 20,
+    });
   }
 
   private computeRank(totalSaved: number): string {

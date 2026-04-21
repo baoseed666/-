@@ -77,20 +77,22 @@ export class ChallengesService {
       })),
     })}\n\n`;
 
-    const category = this.inferShopCategory(challenge.inputText);
+    const categories = this.inferShopCategories(challenge.inputText);
 
     yield `event: action_query\ndata: ${JSON.stringify({
-      category,
+      categories,
       city: challenge.city,
       hasGps: !!(lat && lng),
     })}\n\n`;
 
-    const shopContext = await this.shops.getContextShops(
-      challenge.city,
-      category,
-      lat,
-      lng,
+    const shopContextParts = await Promise.all(
+      categories.map((cat) =>
+        this.shops.getContextShops(challenge.city, cat, lat, lng).then(
+          (ctx) => `【${cat}】\n${ctx}`,
+        ),
+      ),
     );
+    const shopContext = shopContextParts.join('\n\n');
     const timeOfDay = this.getTimeOfDay();
 
     let buffer = '';
@@ -131,6 +133,24 @@ export class ChallengesService {
     }));
     yield `event: plans_ready\ndata: ${JSON.stringify({ plans: planSummaries })}\n\n`;
     yield `event: complete\ndata: ${JSON.stringify({ challengeId })}\n\n`;
+  }
+
+  async generateAsync(
+    challengeId: string,
+    userId: string,
+    lat?: number,
+    lng?: number,
+  ): Promise<void> {
+    const challenge = await this.challenges.findOne({
+      where: { id: challengeId, user: { id: userId } },
+    });
+    if (!challenge) throw new NotFoundException();
+
+    setImmediate(async () => {
+      try {
+        for await (const _ of this.streamTasks(challengeId, lat, lng)) { /* drain */ }
+      } catch { /* fire-and-forget */ }
+    });
   }
 
   async findWithTasks(id: string, userId: string) {
@@ -213,36 +233,47 @@ export class ChallengesService {
     };
   }
 
+  private static readonly CATEGORY_RULES: Array<[RegExp, string]> = [
+    [/本帮|沪菜|上海菜|红烧肉|糖醋|葱油/, '本帮沪菜'],
+    [/咖啡|拿铁|美式|卡布|摩卡|星巴克|瑞幸|manner|mstand|seesaw|咖啡馆|下午茶|tea|面包|烘焙/, '咖啡奶茶'],
+    [/奶茶|茶饮|喜茶|奈雪|蜜雪|霸王茶姬|茶百道|沪上阿姨|茶|bubble tea/, '咖啡奶茶'],
+    [/甜品|蛋糕|冰淇淋|布丁|慕斯|提拉米苏|甜点|糕点|抹茶|蛋糕店|马卡龙|芝士|奶冻/, '甜品蛋糕'],
+    [/火锅|涮锅|涮肉|麻辣烫|冒菜|串串香|串串|滚锅|骨汤锅|清汤锅/, '火锅'],
+    [/烧烤|炭烤|撸串|烤串|bbq|烤肉|炙烤|自助烤肉|铁板/, '烧烤烤肉'],
+    [/海鲜|龙虾|小龙虾|螃蟹|生蚝|鱼鲜|烤鱼|炉鱼|蛤蜊|扇贝|鲍鱼/, '鱼鲜海鲜'],
+    [/寿司|日料|刺身|天妇罗|拉面|日本料理|铁板烧|居酒屋|章鱼烧|乌冬/, '日料'],
+    [/韩国|韩料|韩式|泡菜|部队锅|韩餐|韩菜|韩国菜|炸鸡啤酒|韩式炸鸡|石锅拌饭/, '韩料'],
+    [/泰国|泰式|泰餐|冬阴功|越南|东南亚|越式|河粉|泰菜|泰食|越菜|越南菜|泰北|椰子鸡|东南亚菜|南洋/, '东南亚菜'],
+    [/西餐|牛排|披萨|意面|法餐|汉堡|法式|法国菜|意大利|意大利菜|意式|西班牙|葡式|地中海/, '西餐'],
+    [/川菜|湘菜|川湘|麻辣|辣椒|重庆|长沙|四川|水煮鱼|毛血旺|剁椒/, '川湘菜'],
+    [/粤菜|早茶|点心|广式|港式|肠粉|虾饺|广东菜|粤式|港餐|港茶|叉烧|烧腊|煲仔饭/, '粤菜'],
+    [/江浙|苏菜|浙菜|杭帮|苏帮|苏州菜|浙江菜|杭州菜|苏州|西湖醋鱼|东坡肉/, '江浙菜'],
+    [/云南|贵州|云贵|米线|过桥|酸汤|云贵菜|彝族/, '云贵菜'],
+    [/西北|新疆|陕西|兰州|羊肉泡馍|肉夹馍|大盘鸡|手抓饭|拉条子/, '西北菜'],
+    [/地方菜|民俗|北京菜|烤鸭|台湾|台式|台湾菜|印度|印度菜|印度咖喱|土耳其|墨西哥|中东/, '风味地方菜'],
+    [/自助|buffet|吃到饱|无限量/, '自助餐'],
+    [/ktv|唱歌|唱k|k歌|卡拉ok|酒吧|夜店|live house|livehouse|清吧|驻唱|酒馆|夜生活/, 'KTV'],
+    [/电影|影院|看片|影城/, '电影院'],
+    [/桌游|棋牌|剧本杀|狼人杀|电竞|网咖|游戏厅|游戏|剧本|推理|密道|侦探|谁是卧底/, '桌游'],
+    [/密室|逃脱/, '密室逃脱'],
+    [/购物|逛街|商场|超市|便利店|逛超市|集市|市集|买东西|购物中心/, '购物'],
+    [/公园|爬山|户外|骑行|露营|健身|温泉|游泳|徒步|钓鱼|攀岩|冲浪|滑板|羽毛球|网球|瑜伽/, '户外公园'],
+    [/小吃|简餐|快餐|盖浇|黄焖鸡|兰州拉面|酸辣粉|螺蛳粉|炸鸡|鸡排|煎饼|包子|饺子|包饺子|馄饨|夜宵|宵夜|消夜|炒饭|炒面|鸡公煲/, '小吃简餐'],
+  ];
+
   inferShopCategory(text: string): string {
     const t = text.toLowerCase();
+    const match = ChallengesService.CATEGORY_RULES.find(([re]) => re.test(t));
+    return match ? match[1] : '小吃简餐';
+  }
 
-    if (/本帮|沪菜|上海菜|红烧肉|糖醋|葱油/.test(t)) return '本帮沪菜';
-    if (/咖啡|拿铁|美式|卡布|摩卡|星巴克|瑞幸|manner|mstand|seesaw/.test(t)) return '咖啡奶茶';
-    if (/奶茶|茶饮|喜茶|奈雪|蜜雪|霸王茶姬|茶百道|沪上阿姨/.test(t)) return '咖啡奶茶';
-    if (/甜品|蛋糕|冰淇淋|布丁|慕斯|提拉米苏|甜点|糕点/.test(t)) return '甜品蛋糕';
-    if (/火锅|涮锅|涮肉|麻辣烫|冒菜|串串香/.test(t)) return '火锅';
-    if (/烧烤|炭烤|撸串|烤串|bbq|烤肉|炙烤/.test(t)) return '烧烤烤肉';
-    if (/海鲜|龙虾|小龙虾|螃蟹|生蚝|鱼鲜|烤鱼|炉鱼/.test(t)) return '鱼鲜海鲜';
-    if (/寿司|日料|刺身|天妇罗|拉面|日本料理/.test(t)) return '日料';
-    if (/韩国|韩料|韩式|泡菜|部队锅|韩餐/.test(t)) return '韩料';
-    if (/泰国|泰式|泰餐|冬阴功/.test(t)) return '东南亚菜';
-    if (/越南|东南亚|越式|河粉/.test(t)) return '东南亚菜';
-    if (/西餐|牛排|披萨|意面|法餐|汉堡/.test(t)) return '西餐';
-    if (/川菜|湘菜|川湘|麻辣|辣椒|重庆|长沙/.test(t)) return '川湘菜';
-    if (/粤菜|早茶|点心|广式|港式|肠粉|虾饺/.test(t)) return '粤菜';
-    if (/江浙|苏菜|浙菜|杭帮|苏帮/.test(t)) return '江浙菜';
-    if (/云南|贵州|云贵|米线|过桥|酸汤/.test(t)) return '云贵菜';
-    if (/西北|新疆|陕西|兰州|羊肉泡馍|肉夹馍/.test(t)) return '西北菜';
-    if (/地方菜|特色|风味|民俗|北京菜|烤鸭/.test(t)) return '风味地方菜';
-    if (/自助|buffet|吃到饱|无限量/.test(t)) return '自助餐';
-    if (/ktv|唱歌|唱k|k歌|卡拉ok/.test(t)) return 'KTV';
-    if (/电影|影院|看片|影城/.test(t)) return '电影院';
-    if (/桌游|棋牌|剧本杀|狼人杀/.test(t)) return '桌游';
-    if (/密室|逃脱/.test(t)) return '密室逃脱';
-    if (/购物|逛街|商场|超市/.test(t)) return '购物';
-    if (/公园|爬山|户外|骑行|露营|健身/.test(t)) return '户外公园';
-
-    return '小吃简餐';
+  inferShopCategories(text: string): string[] {
+    const t = text.toLowerCase();
+    const seen = new Set<string>();
+    for (const [re, cat] of ChallengesService.CATEGORY_RULES) {
+      if (re.test(t)) seen.add(cat);
+    }
+    return seen.size > 0 ? [...seen] : ['小吃简餐'];
   }
 
   private getTimeOfDay(): 'morning' | 'afternoon' | 'evening' | 'night' {
@@ -309,34 +340,31 @@ export class ChallengesService {
     const category = this.inferShopCategory(combined);
 
     try {
-      const recs = await this.shops.getRecommendationsForTask(
-        challenge.city,
-        category,
-        lat,
-        lng,
-        budget,
+      // 名称优先：若有 shopHint，先按名称找到目标店
+      let hintShop: import('../shops/shops.service').ShopRecommendation | null = null;
+      if (shopHint) {
+        hintShop = await this.shops.findByHint(shopHint, challenge.city, lat, lng);
+      }
+
+      // 按品类补充推荐（最多3家，过滤掉已命名的店）
+      const categoryRecs = await this.shops.getRecommendationsForTask(
+        challenge.city, category, lat, lng, budget,
       );
+      const others = hintShop
+        ? categoryRecs.filter((r) => r.name !== hintShop!.name).slice(0, 2)
+        : categoryRecs.slice(0, 3);
+
+      const recs = hintShop ? [hintShop, ...others] : others;
       task.shopRecommendations = recs;
 
       const links: ActionLink[] = [];
       const bestShop = recs[0];
-
       if (bestShop) {
-        // 大众点评详情/搜索
-        if (bestShop.dianpingUrl) {
-          links.push({ type: 'book', label: '大众点评', url: bestShop.dianpingUrl });
-        }
-        // 美团订餐/预约
-        if (bestShop.meituanUrl) {
-          links.push({ type: 'book', label: '美团预约', url: bestShop.meituanUrl });
-        }
-        // 高德导航
-        if (bestShop.amapNavUrl) {
-          links.push({ type: 'nav', label: '高德导航', url: bestShop.amapNavUrl });
-        }
+        if (bestShop.dianpingUrl) links.push({ type: 'book', label: '大众点评', url: bestShop.dianpingUrl });
+        if (bestShop.meituanUrl) links.push({ type: 'book', label: '美团预约', url: bestShop.meituanUrl });
+        if (bestShop.amapNavUrl) links.push({ type: 'nav', label: '高德导航', url: bestShop.amapNavUrl });
       }
 
-      // 地狱难度额外：拼团/比价链接
       if (difficulty === '地狱') {
         const q = encodeURIComponent(shopHint ?? task.description);
         links.push({ type: 'group', label: '拼多多找团购', url: `https://mobile.yangkeduo.com/search_result.html?search_key=${q}` });
@@ -372,6 +400,7 @@ export class ChallengesService {
       );
     }
 
+    links.push({ type: 'video', label: '抖音团购', url: `https://www.douyin.com/search/${encodeURIComponent(description + ' 上海龙华 团购')}` });
     return links;
   }
 
@@ -396,6 +425,7 @@ export class ChallengesService {
       links.push({ type: 'search', label: '什么值得买', url: `https://m.smzdm.com/search/?s=${q}` });
     }
 
+    links.push({ type: 'video', label: '抖音隐藏优惠', url: `https://www.douyin.com/search/${encodeURIComponent(description + ' 上海龙华 隐藏优惠')}` });
     return links;
   }
 

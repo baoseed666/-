@@ -1,0 +1,92 @@
+.container {
+  padding: 32rpx 32rpx 120rpx;
+}
+
+.profile-header {
+  padding: 32rpx;
+}
+
+.avatar-area {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: #ffdd00;
+  color: #000;
+  font-size: 48rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 96rpx;
+}
+
+.username {
+  margin-bottom: 8rpx;
+}
+
+.stats-row {
+  display: flex;
+  gap: 16rpx;
+}
+
+.stat-card {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 8rpx;
+}
+
+.stat-val {
+  font-size: 44rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx;
+}
+
+.history-left {
+  flex: 1;
+}
+
+.history-desc {
+  font-size: 28rpx;
+  color: #ccc;
+}
+
+.history-saved {
+  flex-shrink: 0;
+}
+
+.logout-btn {
+  width: 100%;
+  color: #ff4444;
+  border-color: #ff4444;
+}
+
+.not-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  padding: 32rpx;
+}

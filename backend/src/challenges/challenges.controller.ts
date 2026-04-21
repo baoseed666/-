@@ -87,6 +87,17 @@ export class ChallengesController {
     );
   }
 
+  @Post(':id/generate')
+  triggerGenerate(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body('lat') lat: number,
+    @Body('lng') lng: number,
+  ) {
+    this.challenges.generateAsync(id, user.id, lat, lng).catch(() => {});
+    return { ok: true };
+  }
+
   @Post(':id/complete')
   complete(
     @Param('id') id: string,

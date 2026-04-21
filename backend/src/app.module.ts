@@ -15,6 +15,7 @@ import { LbsModule } from './lbs/lbs.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { CityModule } from './city/city.module';
 import { TransitModule } from './transit/transit.module';
+import { EmotionModule } from './emotion/emotion.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { TransitModule } from './transit/transit.module';
     LbsModule,
     CityModule,
     TransitModule,
+    EmotionModule,
   ],
 })
 export class AppModule {}

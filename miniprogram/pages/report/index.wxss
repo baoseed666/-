@@ -1,0 +1,42 @@
+.container {
+  padding: 48rpx 32rpx 120rpx;
+}
+
+.rank-area {
+  text-align: center;
+  padding: 48rpx 0 32rpx;
+}
+
+.rank-title {
+  font-size: 72rpx;
+  letter-spacing: 4rpx;
+}
+
+.savings-area {
+  text-align: center;
+  padding: 40rpx;
+}
+
+.savings-label {
+  margin-bottom: 16rpx;
+}
+
+.savings-amount {
+  font-size: 96rpx;
+  font-weight: bold;
+}
+
+.report-content {
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: #ccc;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.loading-area {
+  height: 60vh;
+}

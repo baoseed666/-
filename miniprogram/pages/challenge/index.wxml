@@ -1,0 +1,201 @@
+<view class="container">
+
+  <!-- INPUT 阶段 -->
+  <view class="input-phase" wx:if="{{phase === 'input'}}">
+    <view class="title-area">
+      <view class="page-title bold text-gold">⚔️ 省钱挑战</view>
+      <view class="page-sub text-muted text-sm mt-16">告诉AI你的需求，帮你省到极致</view>
+    </view>
+
+    <view class="examples card mt-32">
+      <view class="example-label text-sm text-muted mb-16">示例</view>
+      <view class="example-item text-sm" bindtap="fillExample" data-text="今晚烧烤，预算30，2人">今晚烧烤，预算30，2人</view>
+      <view class="example-item text-sm mt-16" bindtap="fillExample" data-text="周末和朋友看电影，预算50">周末和朋友看电影，预算50</view>
+      <view class="example-item text-sm mt-16" bindtap="fillExample" data-text="下午茶，一个人，预算20">下午茶，一个人，预算20</view>
+    </view>
+
+    <textarea
+      class="textarea mt-24"
+      placeholder="输入你的消费需求..."
+      placeholder-class="placeholder"
+      value="{{input}}"
+      bindinput="onInput"
+      maxlength="200"
+      auto-height
+    />
+    <view class="char-count text-sm text-muted text-right">{{input.length}}/200</view>
+
+    <view class="error-msg text-sm mt-16" wx:if="{{errorMsg}}">⚠️ {{errorMsg}}</view>
+
+    <button class="btn-primary mt-32" disabled="{{!inputValid}}" bindtap="startChallenge">开始挑战</button>
+  </view>
+
+  <!-- LOADING 阶段 -->
+  <view class="loading-phase" wx:if="{{phase === 'loading'}}">
+    <view class="loading-inner">
+      <view class="loading-icon">⚡</view>
+      <view class="loading-text text-gold bold">AI 正在制定省钱方案...</view>
+      <view class="loading-sub text-muted text-sm mt-16">正在分析最优路径（可能需要30-60秒）</view>
+    </view>
+  </view>
+
+  <!-- PLAN_SELECT 阶段 -->
+  <view class="plans-phase" wx:if="{{phase === 'plan_select'}}">
+    <view class="page-title bold text-gold mb-8">选择你的挑战方案</view>
+    <view class="page-sub text-muted text-sm mb-32">量力而行，或放手一搏</view>
+
+    <view class="plans-area">
+      <view
+        wx:for="{{plans}}"
+        wx:key="id"
+        class="plan-card {{item.difficulty === '地狱' ? 'plan-hell' : item.difficulty === '普通' ? 'plan-normal' : 'plan-easy'}}"
+      >
+        <view class="plan-header flex-between">
+          <view class="difficulty-badge {{item.difficulty === '地狱' ? 'badge-hell' : item.difficulty === '普通' ? 'badge-normal' : 'badge-easy'}}">
+            {{item.difficulty === '地狱' ? '🔥 地狱' : item.difficulty === '普通' ? '⚡ 普通' : '🌿 简单'}}
+          </view>
+          <view class="plan-title bold text-gold">{{item.title}}</view>
+        </view>
+
+        <view class="plan-stats flex-between mt-16">
+          <view class="plan-stat">
+            <view class="plan-stat-val bold">❤️ {{item.hp}}</view>
+            <view class="plan-stat-label text-muted text-sm">HP</view>
+          </view>
+          <view class="plan-stat">
+            <view class="plan-stat-val bold">✨ {{item.mp}}</view>
+            <view class="plan-stat-label text-muted text-sm">MP</view>
+          </view>
+          <view class="plan-stat">
+            <view class="plan-stat-val bold text-green">¥{{item.estimatedSave}}</view>
+            <view class="plan-stat-label text-muted text-sm">预计省</view>
+          </view>
+          <view class="plan-stat">
+            <view class="plan-stat-val bold text-gold">¥{{item.estimatedSpend}}</view>
+            <view class="plan-stat-label text-muted text-sm">预计花</view>
+          </view>
+        </view>
+
+        <button
+          class="plan-select-btn mt-16"
+          bindtap="confirmPlan"
+          data-index="{{index}}"
+        >选择此方案</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- TASKS 阶段 -->
+  <view class="tasks-phase" wx:if="{{phase === 'tasks'}}">
+    <view class="stats-row flex-between card">
+      <view class="stat-item">
+        <view class="stat-val text-gold bold text-lg">❤️ {{challenge.hp || '?'}}</view>
+        <view class="stat-label text-sm text-muted">HP</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-val text-green bold text-lg">✨ {{challenge.mp || '?'}}</view>
+        <view class="stat-label text-sm text-muted">MP</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-val text-gold bold text-lg">¥{{challenge.budget || challenge.estimatedSpend || '?'}}</view>
+        <view class="stat-label text-sm text-muted">预算</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-val text-green bold text-lg">¥{{challenge.estimatedSave || '?'}}</view>
+        <view class="stat-label text-sm text-muted">预计省</view>
+      </view>
+    </view>
+
+    <view class="tasks-area mt-16">
+      <view
+        wx:for="{{challenge.tasks}}"
+        wx:key="id"
+        class="task-card card {{item.type === 'main' ? 'task-main' : item.type === 'hidden' ? 'task-hidden' : 'task-side'}}"
+      >
+        <!-- 任务头部 -->
+        <view class="task-header flex-between">
+          <view class="task-type-badge {{item.type}}">
+            {{item.type === 'main' ? '主线' : item.type === 'side' ? '支线' : '🎲 隐藏'}}
+          </view>
+        </view>
+
+        <!-- 任务描述 -->
+        <view class="task-desc mt-16 bold">{{item.description || item.title}}</view>
+
+        <!-- Tips 列表 -->
+        <view wx:if="{{item.tips && item.tips.length > 0}}" class="tips-list mt-12">
+          <view wx:for="{{item.tips}}" wx:key="*this" wx:for-item="tip" class="tip-item text-sm text-muted">
+            💡 {{tip}}
+          </view>
+        </view>
+        <view wx:elif="{{item.tip}}" class="tip-item text-sm text-muted mt-12">
+          💡 {{item.tip}}
+        </view>
+
+        <!-- 店铺推荐 -->
+        <view wx:if="{{item.shopRecommendations && item.shopRecommendations.length > 0}}" class="shop-rec-area mt-16">
+          <view class="shop-rec-label text-sm text-muted mb-8">🏪 推荐店铺</view>
+          <view class="shop-card" wx:for="{{item.shopRecommendations}}" wx:key="name" wx:for-item="shop">
+            <!-- 图片 + 基本信息 -->
+            <view class="shop-main flex-row">
+              <view class="shop-img-wrap">
+                <image wx:if="{{shop.imageUrl}}" class="shop-img" src="{{shop.imageUrl}}" mode="aspectFill" />
+                <view wx:else class="shop-img-placeholder">🍽️</view>
+              </view>
+              <view class="shop-info flex-1">
+                <view class="shop-row-top flex-between">
+                  <view class="shop-name bold text-sm">{{shop.name}}</view>
+                  <view class="shop-rating text-sm text-gold" wx:if="{{shop.rating}}">★ {{shop.rating}}</view>
+                </view>
+                <view class="shop-addr text-xs text-muted mt-4" wx:if="{{shop.address || shop.district}}">
+                  📍 {{shop.address || shop.district}}
+                  <text wx:if="{{shop.distanceText && shop.distanceText !== '位置未知'}}" class="text-blue"> · {{shop.distanceText}}</text>
+                </view>
+                <view wx:if="{{shop.discountTypes && shop.discountTypes.length > 0}}" class="discount-tags mt-4">
+                  <text wx:for="{{shop.discountTypes}}" wx:key="*this" wx:for-item="dt" class="discount-tag">{{dt}}</text>
+                </view>
+                <view wx:if="{{shop.discountList && shop.discountList.length > 0}}" class="discount-details mt-4">
+                  <view wx:for="{{shop.discountList}}" wx:key="*this" wx:for-item="d" class="text-xs text-green">{{d}}</view>
+                </view>
+                <view class="shop-price text-xs text-muted mt-4" wx:if="{{shop.avgPrice}}">
+                  人均 <text class="text-gold">¥{{shop.avgPrice}}</text>
+                </view>
+              </view>
+            </view>
+            <!-- 行动按钮栏 -->
+            <view class="shop-actions flex-between">
+              <view class="shop-btn btn-dianping" bindtap="openLink" data-url="{{shop.dianpingUrl || shop.externalUrl}}">📖 点评</view>
+              <view class="shop-btn btn-meituan" bindtap="openLink" data-url="{{shop.meituanUrl}}">🛵 美团</view>
+              <view class="shop-btn btn-nav" bindtap="openLink" data-url="{{shop.amapNavUrl}}">🗺️ 导航</view>
+              <view class="shop-btn btn-douyin" bindtap="openShopDouyin" data-name="{{shop.name}}">🎵 抖音</view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 动作链接 -->
+        <view wx:if="{{item.actionLinks && item.actionLinks.length > 0}}" class="action-links mt-16">
+          <scroll-view scroll-x class="action-links-scroll">
+            <view
+              wx:for="{{item.actionLinks}}"
+              wx:key="label"
+              wx:for-item="link"
+              class="action-btn"
+              bindtap="openLink"
+              data-url="{{link.url}}"
+            >
+              <text>{{link.type === 'book' ? '📅' : link.type === 'nav' ? '🗺️' : link.type === 'group' ? '🛒' : link.type === 'video' ? '▶️' : '🔗'}}</text>
+              <text class="action-btn-label">{{link.label}}</text>
+            </view>
+          </scroll-view>
+        </view>
+      </view>
+    </view>
+
+    <button
+      class="btn-primary mt-32"
+      bindtap="completeChallenge"
+      disabled="{{completing}}"
+    >{{completing ? '结算中...' : '完成挑战 →'}}</button>
+  </view>
+
+</view>

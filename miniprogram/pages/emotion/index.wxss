@@ -1,0 +1,134 @@
+.container {
+  padding: 32rpx;
+  min-height: 100vh;
+}
+
+/* 模式选择 */
+.mode-select {
+  padding-top: 80rpx;
+  text-align: center;
+}
+
+.mode-title {
+  font-size: 56rpx;
+  letter-spacing: 4rpx;
+  margin-bottom: 16rpx;
+}
+
+.mode-sub {
+  font-size: 28rpx;
+  margin-bottom: 64rpx;
+}
+
+.mode-cards {
+  display: flex;
+  gap: 24rpx;
+}
+
+.mode-card {
+  flex: 1;
+  padding: 40rpx 24rpx;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-card:active {
+  transform: scale(0.97);
+  border-color: #ffdd00;
+}
+
+.mode-icon {
+  font-size: 72rpx;
+  margin-bottom: 20rpx;
+}
+
+.mode-name {
+  font-size: 36rpx;
+  margin-bottom: 8rpx;
+}
+
+.mode-desc {
+  margin-bottom: 16rpx;
+}
+
+.mode-tag {
+  display: inline-block;
+  border: 1rpx solid currentColor;
+  border-radius: 20rpx;
+  padding: 4rpx 16rpx;
+}
+
+/* 进度条 */
+.progress-bar {
+  height: 6rpx;
+  background: #1a1a1a;
+  border-radius: 4rpx;
+  margin-bottom: 16rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #ffdd00;
+  border-radius: 4rpx;
+  transition: width 0.3s;
+}
+
+.step-hint {
+  text-align: right;
+  margin-bottom: 48rpx;
+}
+
+/* 题目 */
+.question-text {
+  font-size: 44rpx;
+  line-height: 1.4;
+  margin-bottom: 40rpx;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.option-card {
+  padding: 28rpx 24rpx;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.option-selected {
+  border-color: #ffdd00;
+  background: #1a1a00;
+}
+
+.option-text {
+  font-size: 30rpx;
+}
+
+.nav-row {
+  display: flex;
+  align-items: center;
+  margin-top: 48rpx;
+  gap: 16rpx;
+}
+
+/* 分析中 */
+.analyzing-area {
+  height: 60vh;
+}
+
+.analyze-inner {
+  text-align: center;
+}
+
+.analyze-emoji {
+  font-size: 96rpx;
+  margin-bottom: 32rpx;
+}
+
+.analyze-text {
+  font-size: 40rpx;
+  margin-bottom: 16rpx;
+}

@@ -1,0 +1,44 @@
+<view class="container" wx:if="{{user}}">
+  <view class="profile-header card">
+    <view class="avatar-area">
+      <view class="avatar">{{avatarChar}}</view>
+      <view class="user-info">
+        <view class="username bold text-lg">{{user.nickname || user.name || '抠门玩家'}}</view>
+        <view class="user-rank text-gold text-sm">{{user.title || user.rank || '初级抠门侠'}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="stats-row flex-between mt-16">
+    <view class="stat-card card">
+      <view class="stat-val text-green bold">¥{{user.totalSaved || user.total_saved || 0}}</view>
+      <view class="stat-label text-muted text-sm">总省金额</view>
+    </view>
+    <view class="stat-card card">
+      <view class="stat-val text-gold bold">{{user.points || 0}}</view>
+      <view class="stat-label text-muted text-sm">积分</view>
+    </view>
+    <view class="stat-card card">
+      <view class="stat-val bold">{{user.challengeCount || user.challenge_count || 0}}</view>
+      <view class="stat-label text-muted text-sm">挑战次数</view>
+    </view>
+  </view>
+
+  <view class="history-section mt-32" wx:if="{{history.length}}">
+    <view class="section-title bold mb-16">历史挑战</view>
+    <view wx:for="{{history}}" wx:key="id" class="history-item card flex-between">
+      <view class="history-left">
+        <view class="history-desc text-sm">{{item.description || item.input}}</view>
+        <view class="history-date text-muted text-sm mt-16">{{item.createdAt || item.created_at || ''}}</view>
+      </view>
+      <view class="history-saved text-green text-sm bold">省¥{{item.savedAmount || item.saved_amount || 0}}</view>
+    </view>
+  </view>
+
+  <button class="btn-outline logout-btn mt-32" bindtap="logout">退出登录</button>
+</view>
+
+<view class="not-login" wx:if="{{!user}}">
+  <view class="not-login-text text-muted">请先登录</view>
+  <button class="btn-primary mt-32" bindtap="goLogin">去登录</button>
+</view>

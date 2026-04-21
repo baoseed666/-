@@ -32,10 +32,14 @@ export class AuthService {
     phone: string,
     otp: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const stored = await this.redis.get(`sms:${phone}`);
-    if (!stored || stored !== otp)
-      throw new UnauthorizedException('验证码错误或已过期');
-    await this.redis.del(`sms:${phone}`);
+    if (this.config.get('sms.demoMode')) {
+      if (otp !== '123456') throw new UnauthorizedException('验证码错误或已过期');
+    } else {
+      const stored = await this.redis.get(`sms:${phone}`);
+      if (!stored || stored !== otp)
+        throw new UnauthorizedException('验证码错误或已过期');
+      await this.redis.del(`sms:${phone}`);
+    }
     const user = await this.users.upsertByPhone(phone);
     return this.issueTokens(user);
   }
@@ -45,6 +49,31 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const { openid, nickname, avatarUrl } = await this.exchangeWechatCode(code);
     const user = await this.users.upsertByWechat(openid, nickname, avatarUrl);
+    return this.issueTokens(user);
+  }
+
+  async wechatMiniprogram(
+    code: string,
+    userInfo?: { nickname?: string; avatarUrl?: string },
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    let openid: string;
+    if (this.config.get('wechat.demoMode')) {
+      openid = `demo_${code}_${Date.now()}`;
+    } else {
+      const appId = this.config.get('wechat.miniAppId');
+      const appSecret = this.config.get('wechat.miniAppSecret');
+      const res = await fetch(
+        `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${appSecret}&js_code=${code}&grant_type=authorization_code`,
+      );
+      const data: any = await res.json();
+      if (data.errcode) throw new BadRequestException(`微信授权失败: ${data.errmsg}`);
+      openid = data.openid;
+    }
+    const user = await this.users.upsertByWechat(
+      openid,
+      userInfo?.nickname ?? '微信用户',
+      userInfo?.avatarUrl ?? '',
+    );
     return this.issueTokens(user);
   }
 

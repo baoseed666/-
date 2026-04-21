@@ -1,0 +1,141 @@
+.container {
+  padding: 48rpx 32rpx 120rpx;
+}
+
+/* SQTI 区 */
+.sqti-area {
+  text-align: center;
+  padding: 48rpx 0 32rpx;
+}
+
+.sqti-tag {
+  font-size: 80rpx;
+  letter-spacing: 8rpx;
+  line-height: 1.2;
+  text-shadow: 0 0 20rpx #ffdd0066;
+}
+
+.emotion-label {
+  font-size: 40rpx;
+  margin-top: 16rpx;
+  color: #fff;
+}
+
+.sqti-desc {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  letter-spacing: 1rpx;
+}
+
+.emotion-desc {
+  font-size: 28rpx;
+  line-height: 1.8;
+  padding: 0 16rpx;
+}
+
+/* 路线 */
+.section-title {
+  font-size: 32rpx;
+  margin-bottom: 16rpx;
+}
+
+.route-header {
+  padding: 4rpx 0;
+}
+
+.route-title {
+  font-size: 34rpx;
+}
+
+.route-meta {
+  display: flex;
+  align-items: center;
+}
+
+.ml-16 {
+  margin-left: 16rpx;
+}
+
+.route-toggle {
+  font-size: 28rpx;
+  padding: 8rpx;
+}
+
+.route-stops {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #2a2a2a;
+}
+
+/* Stop */
+.stop-item {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #1a1a1a;
+}
+
+.stop-item:last-child {
+  border-bottom: none;
+}
+
+.stop-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8rpx;
+}
+
+.stop-time {
+  font-size: 24rpx;
+}
+
+.stop-place {
+  font-size: 28rpx;
+}
+
+.stop-cost {
+  font-size: 24rpx;
+}
+
+.ml-8 {
+  margin-left: 8rpx;
+}
+
+.stop-activity {
+  font-size: 26rpx;
+  line-height: 1.6;
+  color: #888;
+  margin-bottom: 12rpx;
+}
+
+/* 推荐店铺 */
+.shops-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 8rpx;
+}
+
+.shop-chip {
+  background: #111;
+  border: 1rpx solid #00ff8833;
+  border-radius: 12rpx;
+  padding: 12rpx 20rpx;
+  flex-shrink: 0;
+}
+
+.shop-name {
+  color: #00ff88;
+  font-size: 26rpx;
+  margin-bottom: 4rpx;
+}
+
+.shop-meta {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+}
+
+/* 打卡 */
+.checkin-area {
+  padding: 0 0 32rpx;
+}
