@@ -21,6 +21,11 @@ export interface KoumenRoute {
 const HUACLAW_ORIGIN = 'http://localhost:5174';
 
 export function openInHuaclawMap(route: KoumenRoute): void {
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(route))));
+  const bytes = new TextEncoder().encode(JSON.stringify(route));
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const encoded = btoa(binary);
   window.open(`${HUACLAW_ORIGIN}/?koumen=${encodeURIComponent(encoded)}`, '_blank');
 }
