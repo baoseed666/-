@@ -57,6 +57,14 @@
 
     <!-- Complete button -->
     <div v-if="challenge?.tasks?.length && !streaming" class="fixed bottom-6 left-4 right-4 max-w-lg mx-auto">
+      <button
+        v-if="challenge?.tasks?.length && !streaming"
+        @click="handleOpenHuaclawMap"
+        class="btn-arcade w-full justify-center text-sm mb-2 border-arcade-green text-arcade-green"
+        style="background:transparent;"
+      >
+        🗺 在花爪地图查看路线
+      </button>
       <button @click="showCompleteModal = true" class="btn-arcade w-full justify-center text-lg">
         🏆 完成挑战，生成战报
       </button>
@@ -91,6 +99,7 @@ import PlanSelector from '../components/challenge/PlanSelector.vue';
 import CityPulseBar from '../components/city/CityPulseBar.vue';
 import RouteCard from '../components/city/RouteCard.vue';
 import type { ShopRecommendation } from '../components/shop/ShopCard.vue';
+import { openInHuaclawMap, type KoumenRoute } from '../composables/useHuaclawMap';
 
 interface Task {
   id: string;
@@ -222,6 +231,30 @@ async function completeTask(taskId: string) {
   if (!challenge.value) return;
   await store.updateTask(challenge.value.id, taskId, 'done');
   challenge.value = await store.load(challenge.value.id) as Challenge;
+}
+
+function handleOpenHuaclawMap() {
+  const stops = (challenge.value?.tasks ?? []).map((task, i) => {
+    const shop = store.shopMatches[i]?.[0];
+    return {
+      seq: i + 1,
+      name: shop?.name ?? task.description.slice(0, 20),
+      activity: task.description,
+      cost: shop?.avgPrice ?? 0,
+      save: shop ? Math.round((shop.avgPrice ?? 0) * 0.2) : undefined,
+      lat: shop?.lat ?? undefined,
+      lng: shop?.lng ?? undefined,
+      address: shop?.address ?? undefined,
+    };
+  });
+
+  const route: KoumenRoute = {
+    type: 'challenge',
+    title: challenge.value?.tasks?.length ? '省钱挑战路线' : '省钱挑战路线',
+    totalSave: stops.reduce((s, p) => s + (p.save ?? 0), 0) || undefined,
+    stops,
+  };
+  openInHuaclawMap(route);
 }
 
 async function handleComplete() {
