@@ -1,0 +1,88 @@
+<view class="container">
+
+  <!-- Header -->
+  <view class="header">
+    <view class="header-title text-gold bold">没钱？也要有满满的一天</view>
+    <view class="header-sub text-muted">龙华 AI 自动规划路线，帮你省钱又省心</view>
+  </view>
+
+  <!-- Tabs -->
+  <view class="tabs">
+    <view
+      class="tab {{activeTab === 'mood' ? 'tab-active' : ''}}"
+      bindtap="setTab"
+      data-tab="mood"
+    >🎵 气氛正好</view>
+    <view
+      class="tab {{activeTab === 'budget' ? 'tab-active' : ''}}"
+      bindtap="setTab"
+      data-tab="budget"
+    >💚 全力节约</view>
+  </view>
+
+  <!-- Budget filter -->
+  <view class="section-label text-muted">今天花多少?</view>
+  <view class="budget-grid">
+    <view
+      wx:for="{{budgetOptions}}"
+      wx:key="key"
+      class="budget-card card {{selectedBudget === item.key ? 'budget-selected' : ''}}"
+      bindtap="setBudget"
+      data-key="{{item.key}}"
+    >
+      <view class="budget-label bold {{selectedBudget === item.key ? 'text-gold' : 'text-muted'}}">{{item.label}}</view>
+      <view class="budget-sub text-muted text-sm">{{item.sub}}</view>
+    </view>
+  </view>
+
+  <!-- Category filter -->
+  <view class="section-label text-muted">今天想做什么?</view>
+  <view class="cat-row">
+    <view
+      wx:for="{{categories}}"
+      wx:key="*this"
+      class="cat-pill {{selectedCats[item] ? 'cat-active' : ''}}"
+      bindtap="toggleCat"
+      data-cat="{{item}}"
+    >{{item}}</view>
+  </view>
+
+  <!-- Result count -->
+  <view class="result-hint text-muted text-sm">找到 <text class="text-gold bold">{{filteredAreas.length}}</text> 个匹配商圈</view>
+
+  <!-- Area cards -->
+  <view wx:for="{{filteredAreas}}" wx:key="name" class="area-card card">
+    <view class="area-top">
+      <view class="area-emoji">{{item.emoji}}</view>
+      <view class="area-info">
+        <view class="area-header">
+          <view class="area-name bold">{{item.name}}</view>
+          <view class="area-price text-green text-sm">{{item.budgetMin === 0 ? '免费' : '¥' + item.budgetMin + '+'}}</view>
+        </view>
+        <view class="area-type text-muted text-sm">{{item.type}}</view>
+        <view class="area-desc text-muted text-sm">{{item.desc}}</view>
+        <view class="area-features">
+          <view
+            wx:for="{{item.features}}"
+            wx:key="*this"
+            wx:for-item="feat"
+            class="feat-pill"
+          >{{feat}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{filteredAreas.length === 0}}" class="empty-state flex-center">
+    <view class="text-muted text-sm" style="text-align:center">
+      <view>暂无匹配的商圈</view>
+      <view class="mt-16 text-sm">试试调整预算或类别筛选</view>
+    </view>
+  </view>
+
+  <!-- CTA -->
+  <view class="cta-wrap">
+    <button class="btn-primary" bindtap="planRoute">🗺️ 为你规划路线</button>
+  </view>
+
+</view>

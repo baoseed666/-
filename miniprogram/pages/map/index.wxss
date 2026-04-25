@@ -1,0 +1,191 @@
+.container {
+  padding: 32rpx;
+  padding-bottom: 180rpx;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 48rpx;
+  padding-top: 24rpx;
+}
+
+.header-title {
+  font-size: 44rpx;
+  line-height: 1.3;
+  margin-bottom: 12rpx;
+}
+
+.header-sub {
+  font-size: 24rpx;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border: 1rpx solid #2a2a2a;
+  border-radius: 12rpx;
+  overflow: hidden;
+  margin-bottom: 48rpx;
+}
+
+.tab {
+  flex: 1;
+  padding: 20rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #666666;
+  transition: all 0.2s;
+}
+
+.tab-active {
+  background: #ffdd00;
+  color: #000000;
+}
+
+/* Section label */
+.section-label {
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
+  margin-bottom: 20rpx;
+}
+
+/* Budget grid */
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16rpx;
+  margin-bottom: 40rpx;
+}
+
+.budget-card {
+  padding: 24rpx 8rpx;
+  text-align: center;
+  margin-bottom: 0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.budget-card:active {
+  transform: scale(0.96);
+}
+
+.budget-selected {
+  border-color: #ffdd00;
+  background: rgba(255, 221, 0, 0.08);
+}
+
+.budget-label {
+  font-size: 28rpx;
+  margin-bottom: 6rpx;
+}
+
+.budget-sub {
+  font-size: 20rpx;
+}
+
+/* Category pills */
+.cat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 40rpx;
+}
+
+.cat-pill {
+  padding: 12rpx 28rpx;
+  border-radius: 100rpx;
+  border: 1rpx solid #2a2a2a;
+  font-size: 26rpx;
+  color: #666666;
+  transition: all 0.15s;
+}
+
+.cat-active {
+  border-color: #ffdd00;
+  background: rgba(255, 221, 0, 0.08);
+  color: #ffdd00;
+}
+
+/* Result hint */
+.result-hint {
+  margin-bottom: 24rpx;
+}
+
+/* Area card */
+.area-card {
+  margin-bottom: 20rpx;
+}
+
+.area-top {
+  display: flex;
+  gap: 24rpx;
+  align-items: flex-start;
+}
+
+.area-emoji {
+  font-size: 72rpx;
+  line-height: 1;
+}
+
+.area-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.area-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6rpx;
+}
+
+.area-name {
+  font-size: 32rpx;
+}
+
+.area-price {
+  font-family: monospace;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.area-type {
+  margin-bottom: 8rpx;
+}
+
+.area-desc {
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+
+.area-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.feat-pill {
+  padding: 6rpx 18rpx;
+  border-radius: 100rpx;
+  border: 1rpx solid #2a2a2a;
+  font-size: 22rpx;
+  color: #666666;
+}
+
+/* Empty state */
+.empty-state {
+  height: 300rpx;
+}
+
+/* CTA */
+.cta-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx 32rpx 60rpx;
+  background: linear-gradient(to top, #0a0a0a 70%, transparent);
+}

@@ -9,7 +9,8 @@
     "pages/points/index",
     "pages/leaderboard/index",
     "pages/profile/index",
-    "pages/webview/index"
+    "pages/webview/index",
+    "pages/map/index"
   ],
   "tabBar": {
     "color": "#666666",
@@ -19,7 +20,8 @@
       { "pagePath": "pages/index/index", "text": "首页" },
       { "pagePath": "pages/emotion/index", "text": "情绪" },
       { "pagePath": "pages/points/index", "text": "积分" },
-      { "pagePath": "pages/profile/index", "text": "我的" }
+      { "pagePath": "pages/profile/index", "text": "我的" },
+      { "pagePath": "pages/map/index", "text": "地图" }
     ]
   },
   "window": {

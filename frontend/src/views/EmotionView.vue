@@ -106,26 +106,52 @@
           </div>
         </div>
 
-        <div v-if="expandedRoute === ri" class="space-y-2 border-t border-arcade-border pt-3">
-          <div v-for="(stop, si) in route.stops" :key="si" class="flex items-start gap-3">
-            <span class="text-arcade-gold text-xs shrink-0 mt-0.5 font-mono">{{ stop.time }}</span>
-            <div class="flex-1">
-              <p class="text-white text-xs font-semibold">{{ stop.place }}</p>
-              <p class="text-arcade-muted text-xs">{{ stop.activity }}</p>
-              <div v-if="stop.shops?.length" class="mt-1 flex gap-2 flex-wrap">
-                <a
-                  v-for="shop in stop.shops.slice(0, 2)"
-                  :key="shop.name"
-                  :href="shop.dianpingUrl ?? '#'"
-                  target="_blank"
-                  rel="noopener"
-                  class="text-xs px-2 py-0.5 rounded border border-orange-400/40 text-orange-300 hover:bg-orange-400/10 transition-colors"
-                >
-                  {{ shop.name }} {{ shop.rating ? '★' + Number(shop.rating).toFixed(1) : '' }}
-                </a>
+        <div v-if="expandedRoute === ri" class="space-y-3 border-t border-arcade-border pt-3">
+          <div v-for="(stop, si) in route.stops" :key="si" class="space-y-2">
+            <div class="flex items-start gap-3">
+              <span class="text-arcade-gold text-xs shrink-0 mt-0.5 font-mono">{{ stop.time }}</span>
+              <div class="flex-1">
+                <p class="text-white text-xs font-semibold">{{ stop.place }}</p>
+                <p class="text-arcade-muted text-xs">{{ stop.activity }}</p>
               </div>
+              <span class="text-arcade-green text-xs shrink-0">¥{{ stop.estimated_cost }}</span>
             </div>
-            <span class="text-arcade-green text-xs shrink-0">¥{{ stop.estimated_cost }}</span>
+            <!-- Shop recommendations -->
+            <div class="ml-[3.5rem] space-y-1.5">
+              <template v-if="stop.recommended_shops?.length">
+                <div
+                  v-for="shop in stop.recommended_shops"
+                  :key="shop.name"
+                  class="rounded border border-arcade-border bg-black/30 px-2.5 py-2 space-y-1"
+                >
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-white text-xs font-semibold truncate">{{ shop.name }}</span>
+                    <span v-if="shop.rating" class="text-arcade-gold text-xs shrink-0">⭐ {{ Number(shop.rating).toFixed(1) }}</span>
+                  </div>
+                  <div class="flex items-center gap-3 text-arcade-muted text-xs">
+                    <span v-if="shop.avgPrice">人均 ¥{{ shop.avgPrice }}</span>
+                    <span v-if="shop.address" class="truncate">{{ shop.address.length > 20 ? shop.address.slice(0, 20) + '…' : shop.address }}</span>
+                  </div>
+                  <div class="flex gap-2 pt-0.5">
+                    <a
+                      v-if="shop.dianpingUrl"
+                      :href="shop.dianpingUrl"
+                      target="_blank"
+                      rel="noopener"
+                      class="text-xs px-2.5 py-0.5 rounded border border-orange-400/50 text-orange-300 hover:bg-orange-400/10 transition-colors"
+                    >点评</a>
+                    <a
+                      v-if="shop.amapNavUrl"
+                      :href="shop.amapNavUrl"
+                      target="_blank"
+                      rel="noopener"
+                      class="text-xs px-2.5 py-0.5 rounded border border-arcade-border text-arcade-muted hover:border-arcade-gold/50 hover:text-arcade-gold transition-colors"
+                    >导航</a>
+                  </div>
+                </div>
+              </template>
+              <p v-else class="text-arcade-border text-xs italic">暂无附近推荐</p>
+            </div>
           </div>
         </div>
 
@@ -160,7 +186,9 @@ interface Shop {
   name: string;
   rating: number | null;
   avgPrice: number | null;
+  address?: string | null;
   dianpingUrl?: string | null;
+  amapNavUrl?: string | null;
 }
 interface RouteStop {
   time: string;
@@ -168,7 +196,7 @@ interface RouteStop {
   activity: string;
   estimated_cost: number;
   shop_category?: string;
-  shops?: Shop[];
+  recommended_shops?: Shop[];
 }
 interface EmotionRoute { title: string; mood: string; stops: RouteStop[]; total_cost: number }
 interface EmotionResult {

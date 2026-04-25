@@ -5,7 +5,11 @@
       v-for="(plan, i) in plans"
       :key="plan.id"
       class="card-arcade cursor-pointer border-2 transition-all"
-      :class="selected === i ? 'border-arcade-gold' : 'border-arcade-border hover:border-arcade-muted'"
+      :style="plan.difficulty === '地狱'
+        ? 'border-color:#ff4444; box-shadow: 0 0 12px rgba(255,68,68,0.2)'
+        : plan.difficulty === '普通'
+          ? 'border-color:#ffdd00; box-shadow: 0 0 12px rgba(255,221,0,0.2)'
+          : 'border-color:#00ff88; box-shadow: 0 0 12px rgba(0,255,136,0.2)'"
       @click="selected = i"
     >
       <div class="flex items-center justify-between mb-2">
@@ -17,7 +21,11 @@
             'bg-yellow-500/20 text-yellow-400': plan.difficulty === '普通',
             'bg-arcade-green/20 text-arcade-green': plan.difficulty === '简单',
           }"
-        >{{ plan.difficulty }}</span>
+        >{{
+          plan.difficulty === '地狱' ? '🔥 HELL MODE'
+          : plan.difficulty === '普通' ? '⚡ NORMAL'
+          : '🌿 EASY'
+        }}</span>
       </div>
       <div class="grid grid-cols-3 gap-2 text-center text-xs">
         <div>
@@ -38,6 +46,7 @@
     <button
       class="btn-arcade w-full justify-center"
       :disabled="selected === null || confirming"
+      :style="selected !== null ? 'background: #ffdd00; color: #0a0a0a;' : ''"
       @click="confirm"
     >
       {{ confirming ? '⚡ 生成任务中...' : '✅ 确认方案，开始挑战' }}

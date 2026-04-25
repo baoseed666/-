@@ -44,5 +44,11 @@
     <button class="btn-primary mt-32" disabled="{{loading}}" bindtap="login">
       {{loading ? '登录中...' : '立即登录'}}
     </button>
+
+    <view class="divider mt-24">
+      <text class="text-muted text-sm">或</text>
+    </view>
+
+    <button class="btn-demo mt-16" bindtap="demoLogin">⚡ 一键体验 Demo（无需后端）</button>
   </view>
 </view>

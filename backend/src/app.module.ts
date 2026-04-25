@@ -16,6 +16,7 @@ import { ScraperModule } from './scraper/scraper.module';
 import { CityModule } from './city/city.module';
 import { TransitModule } from './transit/transit.module';
 import { EmotionModule } from './emotion/emotion.module';
+import { OpcModule } from './opc/opc.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { EmotionModule } from './emotion/emotion.module';
     CityModule,
     TransitModule,
     EmotionModule,
+    OpcModule,
   ],
 })
 export class AppModule {}

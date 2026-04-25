@@ -4,8 +4,8 @@
 
     <div class="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
       <div class="text-center mb-8">
-        <h1 class="text-5xl font-bold text-arcade-gold tracking-widest mb-2">抠门大王</h1>
-        <p class="text-arcade-muted tracking-widest text-sm">当 AI 都在推荐你买什么，我们教你怎么不买</p>
+        <h1 class="title-arcade animate-flicker text-5xl font-bold text-arcade-gold tracking-widest mb-2" style="font-size: clamp(2rem, 8vw, 3.5rem);">抠门大王</h1>
+        <p class="text-arcade-muted tracking-widest tracking-[0.2em] text-sm">当 AI 都在推荐你买什么，我们教你怎么不买</p>
         <p class="text-xs text-arcade-border mt-1 font-mono tracking-wider">上海 · 徐汇区龙华街道</p>
       </div>
 
@@ -26,6 +26,8 @@
       </div>
 
       <div class="flex gap-4 mt-6">
+        <router-link to="/opc" class="text-arcade-muted hover:text-arcade-gold text-sm transition-colors">🏢 任务市场</router-link>
+        <router-link to="/metaverse" class="text-arcade-muted hover:text-arcade-gold text-sm transition-colors">🌆 元宇宙</router-link>
         <router-link to="/emotion" class="text-arcade-muted hover:text-arcade-gold text-sm transition-colors">🎭 情绪探索</router-link>
         <router-link to="/points" class="text-arcade-muted hover:text-arcade-gold text-sm transition-colors">🪙 积分</router-link>
         <router-link to="/leaderboard" class="text-arcade-muted hover:text-arcade-gold text-sm transition-colors">🏆 排行榜</router-link>

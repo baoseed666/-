@@ -76,3 +76,18 @@
   border-color: #333;
   color: #666;
 }
+
+.divider {
+  text-align: center;
+}
+
+.btn-demo {
+  background: transparent;
+  border: 1rpx solid #2a2a2a;
+  color: #555;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  width: 100%;
+}

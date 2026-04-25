@@ -2,6 +2,7 @@
   padding: 32rpx 32rpx 120rpx;
 }
 
+/* Header */
 .profile-header {
   padding: 32rpx;
 }
@@ -25,12 +26,36 @@
   justify-content: center;
   text-align: center;
   line-height: 96rpx;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
 }
 
 .username {
   margin-bottom: 8rpx;
 }
 
+.user-rank {
+  font-size: 24rpx;
+}
+
+.points-badge {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.points-val {
+  font-size: 40rpx;
+  font-weight: bold;
+}
+
+.points-label {
+  font-size: 22rpx;
+}
+
+/* Two-column stat cards */
 .stats-row {
   display: flex;
   gap: 16rpx;
@@ -38,12 +63,21 @@
 
 .stat-card {
   flex: 1;
-  text-align: center;
-  padding: 24rpx 8rpx;
+  padding: 28rpx 24rpx;
+}
+
+.stat-icon {
+  font-size: 40rpx;
+  margin-bottom: 12rpx;
+}
+
+.stat-card-title {
+  font-size: 26rpx;
+  margin-bottom: 16rpx;
 }
 
 .stat-val {
-  font-size: 44rpx;
+  font-size: 48rpx;
   font-weight: bold;
   margin-bottom: 8rpx;
 }
@@ -52,36 +86,92 @@
   font-size: 24rpx;
 }
 
+.stat-sub {
+  font-size: 22rpx;
+  margin-top: 12rpx;
+  border-top: 1rpx solid #2a2a2a;
+  padding-top: 12rpx;
+}
+
+/* History section */
 .section-title {
   font-size: 32rpx;
 }
 
 .history-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16rpx;
   padding: 24rpx;
 }
 
 .history-left {
   flex: 1;
+  min-width: 0;
 }
 
 .history-desc {
   font-size: 28rpx;
-  color: #ccc;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.history-saved {
+.history-meta {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.status-badge {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 4rpx;
+}
+
+.status-done {
+  background: rgba(0, 255, 136, 0.15);
+  color: #00ff88;
+}
+
+.status-fail {
+  background: rgba(255, 68, 68, 0.15);
+  color: #ff4444;
+}
+
+.status-active {
+  background: rgba(255, 221, 0, 0.15);
+  color: #ffdd00;
+}
+
+.ml-8 {
+  margin-left: 8rpx;
+}
+
+.history-right {
+  text-align: right;
   flex-shrink: 0;
 }
 
+.history-saved {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.history-pts {
+  font-size: 22rpx;
+}
+
+/* Logout */
 .logout-btn {
   width: 100%;
   color: #ff4444;
   border-color: #ff4444;
 }
 
+/* Not logged in */
 .not-login {
   display: flex;
   flex-direction: column;
@@ -89,4 +179,13 @@
   justify-content: center;
   height: 60vh;
   padding: 32rpx;
+}
+
+.not-login-icon {
+  font-size: 80rpx;
+}
+
+.not-login-text {
+  font-size: 28rpx;
+  margin-top: 24rpx;
 }

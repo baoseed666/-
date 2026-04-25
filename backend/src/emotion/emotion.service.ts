@@ -56,7 +56,7 @@ function buildEmotionPrompt(answers: any[], mode: 'quick' | 'deep'): string {
           "time": "时间段（如：下午2点）",
           "place": "地点名称",
           "activity": "具体活动描述",
-          "shop_category": "推荐店铺品类（如：咖啡奶茶/甜品蛋糕/日料/桌游等）",
+          "shop_category": "从以下值中选一个：咖啡奶茶/甜品蛋糕/小吃简餐/烧烤烤肉/川湘菜/江浙菜/风味地方菜/西餐/东南亚菜/KTV/电影院/购物/户外公园/沉浸体验/户外运动/艺术展览，若无合适类别则填null",
           "estimated_cost": 预计费用数字
         }
       ],

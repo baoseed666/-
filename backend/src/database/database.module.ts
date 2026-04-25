@@ -10,6 +10,7 @@ import { LbsRequest } from '../lbs/lbs-request.entity';
 import { CityEvent } from '../city/city-event.entity';
 import { EmotionProfile } from '../emotion/emotion-profile.entity';
 import { EmotionCheckin } from '../emotion/emotion-checkin.entity';
+import { OpcTask } from '../opc/opc-task.entity';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { EmotionCheckin } from '../emotion/emotion-checkin.entity';
           CityEvent,
           EmotionProfile,
           EmotionCheckin,
+          OpcTask,
         ],
         synchronize: cfg.get('nodeEnv') === 'development',
         logging: false,

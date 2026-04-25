@@ -57,5 +57,11 @@ Page({
     }).finally(() => {
       this.setData({ loading: false });
     });
+  },
+
+  demoLogin() {
+    auth.setDemoMode();
+    getApp().globalData.userInfo = { nickname: '演示用户', isDemo: true };
+    wx.switchTab({ url: '/pages/index/index' });
   }
 });

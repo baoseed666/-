@@ -12,6 +12,10 @@ const router = createRouter({
     { path: '/profile', component: () => import('../views/ProfileView.vue'), meta: { requiresAuth: true } },
     { path: '/points', component: () => import('../views/PointsView.vue'), meta: { requiresAuth: true } },
     { path: '/emotion', component: () => import('../views/EmotionView.vue'), meta: { requiresAuth: true } },
+    { path: '/map', component: () => import('../views/MapView.vue') },
+    { path: '/metaverse', component: () => import('../views/MetaverseView.vue') },
+    { path: '/opc', component: () => import('../views/OpcView.vue'), meta: { requiresAuth: true } },
+    { path: '/dashboard', component: () => import('../views/DashboardView.vue'), meta: { requiresAuth: true } },
   ],
 });
 

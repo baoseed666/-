@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth.store';
+import router from '../router';
 
 export interface ExchangeChannel {
   id: string;
@@ -30,6 +31,7 @@ client.interceptors.response.use(
         return client.request(error.config);
       }
       auth.logout();
+      router.push('/login');
     }
     return Promise.reject(error);
   },
@@ -89,6 +91,8 @@ export const api = {
     heatmap: (city: string) => client.get('/heatmap', { params: { city } }),
   },
   users: {
+    getMe: () => client.get<{ id: string; nickname: string; avatarUrl: string | null; totalSaved: number; rankTitle: string; points: number }>('/users/me'),
+    myChallenges: () => client.get<Array<{ id: string; inputText: string; status: string; savedAmount: number; pointsEarned: number; createdAt: string }>>('/users/me/challenges'),
     myPoints: () => client.get<{ points: number; channels: ExchangeChannel[] }>('/users/me/points'),
   },
   emotion: {
@@ -96,5 +100,9 @@ export const api = {
       client.post<{ pointsEarned: number }>('/emotion/checkin', data),
     myHistory: () => client.get('/emotion/my-history'),
     quizStreamUrl: () => `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/emotion/quiz`,
+  },
+  opc: {
+    getTasks: (taskType?: string) => client.get('/opc/tasks', { params: taskType ? { taskType } : {} }),
+    acceptTask: (id: string) => client.post(`/opc/tasks/${id}/accept`),
   },
 };

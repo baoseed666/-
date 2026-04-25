@@ -54,17 +54,15 @@ test.describe('情绪Agent完整链路', () => {
     // analyzing阶段
     await expect(page.locator('text=AI 正在感知你的情绪')).toBeVisible();
 
-    // 等待result阶段（SSE流式，最多90秒）
-    await expect(page.locator('text=你的情绪标签')).toBeVisible({ timeout: 90000 });
+    // 等待result阶段（SSE流式，最多90秒）—— 两种模式都有"为你推荐"文字
+    await expect(page.locator('text=/为你推荐 \\d+ 条场景路线/')).toBeVisible({ timeout: 90000 });
 
-    // 情绪标签非空
+    // 情绪标签非空（SQTI卡或标准卡均有 text-arcade-gold）
     const labelEl = page.locator('.card-arcade').first().locator('p.text-arcade-gold');
     const labelText = await labelEl.textContent();
     expect(labelText?.trim().length).toBeGreaterThan(0);
 
-    // 有路线卡片
-    const routeCards = page.locator('text=为你推荐 3 条场景路线').locator('~ div .card-arcade');
-    // 至少有1张路线卡
+    // 至少有1张路线卡可打卡
     await expect(page.locator('text=打卡签到 +10积分').first()).toBeVisible();
   }, 120000);
 
@@ -72,7 +70,7 @@ test.describe('情绪Agent完整链路', () => {
     await page.goto('/emotion');
     await fillAllQuestions(page);
     await page.click('button:has-text("🔮 开始情绪分析")');
-    await expect(page.locator('text=你的情绪标签')).toBeVisible({ timeout: 90000 });
+    await expect(page.locator('text=/为你推荐 \\d+ 条场景路线/')).toBeVisible({ timeout: 90000 });
 
     // 第一张路线默认展开（expandedRoute = 0）
     // 找到第一个stop的time字段
@@ -87,7 +85,7 @@ test.describe('情绪Agent完整链路', () => {
     await page.goto('/emotion');
     await fillAllQuestions(page);
     await page.click('button:has-text("🔮 开始情绪分析")');
-    await expect(page.locator('text=你的情绪标签')).toBeVisible({ timeout: 90000 });
+    await expect(page.locator('text=/为你推荐 \\d+ 条场景路线/')).toBeVisible({ timeout: 90000 });
 
     const checkinBtn = page.locator('button:has-text("📍 打卡签到 +10积分")').first();
     await expect(checkinBtn).toBeEnabled();
@@ -100,7 +98,7 @@ test.describe('情绪Agent完整链路', () => {
     await page.goto('/emotion');
     await fillAllQuestions(page);
     await page.click('button:has-text("🔮 开始情绪分析")');
-    await expect(page.locator('text=你的情绪标签')).toBeVisible({ timeout: 90000 });
+    await expect(page.locator('text=/为你推荐 \\d+ 条场景路线/')).toBeVisible({ timeout: 90000 });
 
     await page.click('button:has-text("重新测试")');
     await expect(page.locator('text=省钱人格 SQTI')).toBeVisible();
@@ -142,7 +140,7 @@ test.describe('移动端：情绪页布局', () => {
     await page.goto('/emotion');
     await fillAllQuestions(page);
     await page.click('button:has-text("🔮 开始情绪分析")');
-    await expect(page.locator('text=你的情绪标签')).toBeVisible({ timeout: 90000 });
+    await expect(page.locator('text=/为你推荐 \\d+ 条场景路线/')).toBeVisible({ timeout: 90000 });
 
     const cards = page.locator('.card-arcade');
     const count = await cards.count();

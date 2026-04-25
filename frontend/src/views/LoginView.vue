@@ -46,9 +46,14 @@ const countdown = ref(0);
 
 async function sendCode() {
   if (!/^1[3-9]\d{9}$/.test(phone.value)) { error.value = '手机号格式错误'; return; }
-  await auth.sendSms(phone.value);
-  countdown.value = 60;
-  const t = setInterval(() => { if (--countdown.value <= 0) clearInterval(t); }, 1000);
+  error.value = '';
+  try {
+    await auth.sendSms(phone.value);
+    countdown.value = 60;
+    const t = setInterval(() => { if (--countdown.value <= 0) clearInterval(t); }, 1000);
+  } catch (e: any) {
+    error.value = e?.code === 'ERR_NETWORK' ? '无法连接服务器，请先启动后端（npm run start:dev）' : '发送失败，请重试';
+  }
 }
 
 async function handleLogin() {
@@ -57,7 +62,10 @@ async function handleLogin() {
   try {
     await auth.login(phone.value, otp.value);
     await router.push('/');
-  } catch { error.value = '验证码错误，请重试'; }
-  finally { loading.value = false; }
+  } catch (e: any) {
+    error.value = e?.code === 'ERR_NETWORK'
+      ? '无法连接服务器，请先启动后端（npm run start:dev）'
+      : (e?.response?.data?.message ?? '验证码错误，请重试');
+  } finally { loading.value = false; }
 }
 </script>

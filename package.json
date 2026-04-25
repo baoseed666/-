@@ -1,0 +1,10 @@
+{
+  "name": "koumen",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "start:dev": "npm --prefix backend run start:dev",
+    "dev": "npm --prefix frontend run dev",
+    "docker:up": "docker compose up -d postgres redis"
+  }
+}

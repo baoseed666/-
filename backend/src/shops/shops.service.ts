@@ -75,13 +75,31 @@ export class ShopsService {
     openNow?: boolean;
     limit?: number;
   }): Promise<ShopRecommendation[]> {
-    const dbShops = await this.search({
+    let dbShops = await this.search({
       city: opts.city,
       category: opts.category,
       lat: opts.lat,
       lng: opts.lng,
       limit: 50,
     });
+
+    if (dbShops.length === 0 && opts.category) {
+      const qb = this.repo
+        .createQueryBuilder('s')
+        .where('s.city = :city', { city: opts.city })
+        .andWhere('s.category ILIKE :catPattern', { catPattern: `%${opts.category}%` });
+      if (opts.lat && opts.lng) {
+        qb.addSelect(
+          `(6371 * acos(cos(radians(:lat)) * cos(radians(s.lat::float)) * cos(radians(s.lng::float) - radians(:lng)) + sin(radians(:lat)) * sin(radians(s.lat::float))))`,
+          'distance',
+        )
+          .setParameters({ lat: opts.lat, lng: opts.lng })
+          .orderBy('distance', 'ASC');
+      } else {
+        qb.orderBy('s.rating', 'DESC');
+      }
+      dbShops = await qb.limit(50).getMany();
+    }
 
     let filtered = dbShops;
     if (opts.budget && opts.budget > 0) {
