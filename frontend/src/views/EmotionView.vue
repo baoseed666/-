@@ -77,12 +77,13 @@
 
     <!-- Result phase -->
     <div v-else-if="phase === 'result' && result" class="space-y-5">
-      <!-- SQTI card (deep mode) -->
-      <div v-if="result.sqti_tag" class="card-arcade text-center mb-4">
-        <p class="text-arcade-muted text-xs tracking-widest mb-1">你的省钱人格 SQTI</p>
-        <p class="text-arcade-gold text-4xl font-bold font-mono tracking-[0.3em] mb-2">{{ result.sqti_tag }}</p>
-        <p class="text-white text-sm font-semibold mb-1">{{ result.emotion_label }}</p>
-        <p class="text-arcade-muted text-xs leading-relaxed">{{ result.sqti_description ?? result.emotion_description }}</p>
+      <!-- SQTI personality card (deep mode) — shows screenshot image -->
+      <div v-if="result.sqti_tag" class="mb-4 persona-card-enter">
+        <img
+          :src="`/personas/${result.sqti_tag}.jpg`"
+          :alt="result.emotion_label || result.sqti_tag"
+          class="w-full block object-cover rounded-2xl shadow-gold max-h-[70vh]"
+        />
       </div>
 
       <!-- Standard emotion card (quick mode or fallback) -->
@@ -370,3 +371,13 @@ function resetQuiz() {
   expandedRoute.value = 0;
 }
 </script>
+
+<style scoped>
+.persona-card-enter {
+  animation: personaReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes personaReveal {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+</style>
