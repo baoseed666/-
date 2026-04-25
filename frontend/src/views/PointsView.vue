@@ -112,12 +112,80 @@
         </div>
       </div>
     </div>
+
+    <!-- ── 积分汇总卡 ─────────────────────────────── -->
+    <section class="mt-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-arcade-gold font-mono text-sm tracking-widest">▶ 积分汇总</h3>
+      </div>
+      <div class="space-y-2">
+        <div
+          v-for="item in pointsBreakdown"
+          :key="item.source"
+          class="card-arcade p-3 flex items-center justify-between"
+          @click="item.expanded = !item.expanded"
+        >
+          <div>
+            <span class="text-arcade-gold font-mono text-xs">{{ item.source }}</span>
+            <div v-if="item.expanded" class="text-arcade-muted text-xs mt-1 font-mono">{{ item.detail }}</div>
+          </div>
+          <span class="stat-number text-arcade-green text-sm">{{ item.points }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 积分预警 ─────────────────────────────── -->
+    <section class="mt-6">
+      <div class="flex items-center gap-2 mb-3">
+        <h3 class="text-arcade-gold font-mono text-sm tracking-widest">▶ 积分预警</h3>
+        <span class="text-xs font-mono text-arcade-red animate-pulse">● ALERT</span>
+      </div>
+      <div class="space-y-2">
+        <div
+          v-for="warn in pointsWarnings"
+          :key="warn.id"
+          class="card-arcade p-3 border-l-2 border-arcade-red"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-arcade-red font-mono text-xs">{{ warn.label }}</span>
+            <span class="text-arcade-muted font-mono text-xs">{{ warn.deadline }}</span>
+          </div>
+          <div class="text-xs text-arcade-muted font-mono mt-1">{{ warn.action }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Agent 建议 ─────────────────────────────── -->
+    <section class="mt-6 mb-20">
+      <div class="flex items-center gap-2 mb-3">
+        <h3 class="text-arcade-green font-mono text-sm tracking-widest">▶ AGENT 建议</h3>
+        <span class="text-xs font-mono text-arcade-muted">本周最优积分行动</span>
+      </div>
+      <div class="space-y-3">
+        <div
+          v-for="tip in agentTips"
+          :key="tip.id"
+          class="card-arcade p-4"
+          style="border-color: rgba(0,255,136,0.3);"
+        >
+          <div class="font-mono text-xs text-arcade-green mb-2">{{ tip.title }}</div>
+          <div class="text-xs text-arcade-muted font-mono mb-3">{{ tip.desc }}</div>
+          <button
+            class="btn-arcade text-xs px-4 py-1"
+            @click="handleAgentAction(tip)"
+          >
+            一键执行
+          </button>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { api, type ExchangeChannel } from '../api/client';
+import { useRouter } from 'vue-router';
 
 const points = ref(0);
 const displayPoints = ref(0);
@@ -173,6 +241,45 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+const router = useRouter()
+
+const pointsBreakdown = ref([
+  { source: '省钱挑战奖励', points: 320, detail: '完成8次挑战，累计省钱¥156', expanded: false },
+  { source: '情绪打卡积分', points: 180, detail: '连续签到14天', expanded: false },
+  { source: '排行榜奖励',   points: 95,  detail: '本月榜单第3名', expanded: false },
+  { source: '拼单补贴',     points: 50,  detail: '成功拼单3次', expanded: false },
+])
+
+const pointsWarnings = ref([
+  { id: 1, label: '180积分即将过期', deadline: '剩3天', action: '立即兑换优惠券可抵¥18消费' },
+  { id: 2, label: '再省¥44可升段位', deadline: '本月底', action: '完成1次30元以上挑战即可升级' },
+])
+
+const agentTips = ref([
+  {
+    id: 1,
+    title: '⚡ 今晚烧烤双倍积分',
+    desc: '参与「龙华烧烤省钱挑战」可获双倍任务积分，预计到手 +60pts',
+    action: 'challenge',
+    payload: '今晚烧烤 2人 预算60',
+  },
+  {
+    id: 2,
+    title: '🎯 积分兑换最优路径',
+    desc: '当前积分最优兑换：翻转咖啡5折券(消耗100pt) > 立省¥15',
+    action: 'external',
+    payload: 'https://www.meituan.com',
+  },
+])
+
+function handleAgentAction(tip: { action: string; payload: string }) {
+  if (tip.action === 'challenge') {
+    router.push({ path: '/', query: { prefill: tip.payload } })
+  } else {
+    window.open(tip.payload, '_blank')
+  }
+}
 </script>
 
 <style scoped>
