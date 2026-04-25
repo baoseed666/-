@@ -10,7 +10,7 @@
       <div class="onb-title title-arcade">抠门大王</div>
       <div class="onb-sub">不买立省100%</div>
     </div>
-    <button class="onb-skip btn-arcade" style="position:absolute;top:16px;right:16px;padding:6px 14px;font-size:12px;" @click="finish">
+    <button class="onb-skip btn-arcade" @click="finish">
       跳过
     </button>
     <div class="onb-track">
@@ -26,26 +26,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+
+const WF_PALETTE = ['#1a1a00','#0a1200','#001212','#180012','#1a0800']
+const MAX = 280 - 48 - 4
 
 const router = useRouter()
 const sliderX = ref(0)
-const TRACK = 280
-const KNOB = 48
-const MAX = TRACK - KNOB - 4
-
 let startX = 0
 
-const wfStyle = (col: number, row: number) => {
-  const palette = ['#1a1a00','#0a1200','#001212','#180012','#1a0800']
-  return {
-    background: palette[(col * 3 + row) % palette.length],
-    height: `${100 + row * 18}px`,
-    borderRadius: '4px',
-    flexShrink: 0,
-  }
-}
+// Track active listeners for cleanup on unmount
+let activeCleanup: (() => void) | null = null
+onUnmounted(() => activeCleanup?.())
+
+const wfStyle = (col: number, row: number) => ({
+  background: WF_PALETTE[(col * 3 + row) % WF_PALETTE.length],
+  height: `${100 + row * 18}px`,
+  borderRadius: '4px',
+  flexShrink: 0,
+})
 
 function finish() {
   localStorage.setItem('koumen_onboarding_done', 'true')
@@ -60,7 +60,8 @@ function move(x: number) {
 function onMD(e: MouseEvent) {
   startX = e.clientX - sliderX.value
   const mm = (ev: MouseEvent) => move(ev.clientX)
-  const mu = () => { sliderX.value = 0; window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu) }
+  const mu = () => { sliderX.value = 0; window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); activeCleanup = null }
+  activeCleanup = () => { window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu) }
   window.addEventListener('mousemove', mm)
   window.addEventListener('mouseup', mu)
 }
@@ -68,7 +69,8 @@ function onMD(e: MouseEvent) {
 function onTS(e: TouchEvent) {
   startX = e.touches[0].clientX - sliderX.value
   const tm = (ev: TouchEvent) => { ev.preventDefault(); move(ev.touches[0].clientX) }
-  const te = () => { sliderX.value = 0; window.removeEventListener('touchmove', tm); window.removeEventListener('touchend', te) }
+  const te = () => { sliderX.value = 0; window.removeEventListener('touchmove', tm); window.removeEventListener('touchend', te); activeCleanup = null }
+  activeCleanup = () => { window.removeEventListener('touchmove', tm); window.removeEventListener('touchend', te) }
   window.addEventListener('touchmove', tm, { passive: false })
   window.addEventListener('touchend', te)
 }
@@ -130,4 +132,8 @@ function onTS(e: TouchEvent) {
   box-shadow: 0 0 14px rgba(255,221,0,0.45);
 }
 .onb-slider:active { cursor: grabbing; }
+.onb-skip {
+  position: absolute; top: 16px; right: 16px;
+  padding: 6px 14px; font-size: 12px;
+}
 </style>
