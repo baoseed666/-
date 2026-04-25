@@ -22,5 +22,5 @@ const HUACLAW_ORIGIN = 'http://localhost:5174';
 
 export function openInHuaclawMap(route: KoumenRoute): void {
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(route))));
-  window.open(`${HUACLAW_ORIGIN}/?koumen=${encoded}`, '_blank');
+  window.open(`${HUACLAW_ORIGIN}/?koumen=${encodeURIComponent(encoded)}`, '_blank');
 }
