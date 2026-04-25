@@ -1,129 +1,173 @@
-# 队员 UI 集成设计规格
+# 队员 UI 集成 + 花爪 UI 统一设计规格
 
 **日期：** 2026-04-25  
-**目标：** 将队员（helloswills30-cmd）设计的 React + shadcn 前端中，现有项目缺失的 2 个页面，转换为 Vue3 并以 Arcade 黑金主题集成进抠门大王项目。
+**范围：** 抠门大王（D:/projects/抠门大王）+ 花爪（C:/Users/爆seed/hackathon-project）
 
 ---
 
 ## 1. 背景与决策
 
-队员设计了 8 个页面（React + Tailwind v4 + shadcn/ui，暖橙色系）。经逐页比对：
+队员（helloswills30-cmd）设计了 8 个 React + shadcn/ui 页面，全部针对抠门大王，无花爪内容。
 
-| 队员页面 | 现有项目 | 决策 |
-|---------|---------|------|
-| Onboarding | 无 | ✅ **集成（全新增）** |
-| PointsAlliance | PointsView（功能弱） | ✅ **集成（增强替换）** |
-| SavingsChallenge | HomeView | 跳过 |
-| SavingsRoute | ChallengeView | 跳过 |
-| MoodQuiz + MoodExplore | EmotionView | 跳过 |
-| Explore | MapView | 跳过 |
-| MyProfile | ProfileView | 跳过 |
+**集成决策（方案 B：保留 Arcade 主题，只集成增量）：**
 
-**集成策略（方案 B）：** 保留 Arcade 黑金主题，仅集成新增内容，所有组件转换为 Vue3 + Arcade 设计语言。
+| 队员页面 | 现有项目对应 | 决策 |
+|---------|------------|------|
+| Onboarding | 抠门大王：无；花爪：无 | ✅ 两个项目都新增 |
+| PointsAlliance | PointsView（功能弱） | ✅ 抠门大王增强替换 |
+| 其余 6 个页面 | 均已有对应实现 | 跳过 |
+
+**附加需求：** 花爪整体 UI 与抠门大王统一为 Arcade 黑金风格（花爪当前为蓝/紫/粉玻璃态）。
 
 ---
 
-## 2. 页面规格
+## 2. 抠门大王改动规格
 
-### 2.1 OnboardingView（新增路由 `/onboarding`）
+### 2.1 OnboardingView（新增 `/onboarding`）
 
-**功能：** App 首次启动引导页，展示品牌视觉，用户向右滑动/点击进入主页。
-
-**视觉设计（Arcade 主题转换）：**
-- 背景：4列瀑布流图片网格（食物/消费场景图），叠加 `rgba(10,10,10,0.7)` 暗色遮罩
-- 中心：品牌 logo + 标语「不买立省100%」（Arcade 金色 `#ffdd00`，flicker 动画）
-- 底部：「向右滑动进入」滑动轨道组件（金色轨道 + 白色滑块），滑动到底触发路由跳转
-- 字体：`ZCOOL QingKe HuangYou`（标题）+ `Courier New`（副标）
-- CRT 扫描线效果（与全局一致）
+**视觉：**
+- 背景：4列瀑布流消费场景图 + `rgba(10,10,10,0.7)` 暗色遮罩
+- 中心：品牌 logo + 标语「不买立省100%」（`#ffdd00` flicker 动画）
+- 底部：滑动解锁轨道（金色轨道 + 白色滑块）
+- CRT 扫描线（全局一致）
 
 **交互：**
-- 滑动解锁：`touchstart/touchmove/touchend` 原生事件，滑动比例 ≥ 80% 触发
-- 鼠标拖拽：PC 端支持 `mousedown/mousemove/mouseup`
-- 跳过按钮：右上角文字按钮，直接跳转
-- 到达后写入 `localStorage['onboarding_done'] = true`，后续访问直接跳过
+- 触摸/鼠标拖拽滑动，比例 ≥ 80% 触发跳转至 `/`
+- 跳过按钮（右上角）直接跳转
+- 完成写入 `localStorage['koumen_onboarding_done'] = true`
 
-**路由逻辑：**
-- 路由守卫：`/` 根路径检查 `localStorage['onboarding_done']`，未完成则重定向 `/onboarding`
-- 完成后跳转 `/`（HomeView）
+**路由守卫：**
+- 根路径 `/` 检查 localStorage，未完成重定向 `/onboarding`
 - 无需登录认证
 
 **文件：**
 - 创建：`frontend/src/views/OnboardingView.vue`
-- 修改：`frontend/src/router/index.ts`（添加路由 + 守卫逻辑）
+- 修改：`frontend/src/router/index.ts`
+
+### 2.2 PointsView 增强（`/points`）
+
+**新增三个区块（追加，不删除现有功能）：**
+1. **跨店积分汇总卡** — 按来源分组，`card-arcade` 样式，数值用 `.stat-number`（Orbitron）
+2. **积分增值预警** — 即将过期/可升级积分，红色 `#ff4444` 脉冲徽章
+3. **Agent 建议区块** — `▶ AGENT 建议` 绿色边框卡片，「一键执行」`btn-arcade` 按钮，Hackathon 阶段 hardcode mock 数据
+
+**文件：** 修改 `frontend/src/views/PointsView.vue`
 
 ---
 
-### 2.2 PointsView 增强（替换现有 `/points`）
+## 3. 花爪改动规格
 
-**现状分析：**  
-当前 PointsView 只有：积分余额展示 + 来源拆解 + 兑换渠道解锁提示（静态）。
+### 3.1 OnboardingView（新增）
 
-**队员设计的增量功能（需集成）：**
-1. **跨店积分汇总卡** — 按商家/平台分组显示积分分布，支持折叠展开
-2. **积分增值预警** — 高亮即将过期/可升级的积分，带倒计时
-3. **Agent 建议区块** — 展示 AI 生成的「本周最优积分行动」，含一键执行按钮（发起对应挑战或跳转外链）
+**触发逻辑：**
+- App.jsx mount 时检查 `localStorage['huaclaw_onboarding_done']`
+- 未完成：渲染 OnboardingView 覆盖全屏，完成后设置 flag，切换到正常 tab 视图
+- 已完成：直接进入正常 tab 视图
 
-**视觉（保持 Arcade 主题）：**
-- 积分汇总卡：`card-arcade` 样式，商家名用 `#ffdd00` 高亮，数值用 `.stat-number`（Orbitron 字体）
-- 预警标签：红色 `#ff4444` 脉冲徽章（`pulseGold` 动画变体）
-- Agent 建议：绿色 `#00ff88` 边框卡片，标题前加 `▶ AGENT 建议`，按钮用 `btn-arcade`
-
-**数据来源：**
-- 积分汇总：扩展 `GET /users/my-points` 响应，后端添加 `breakdown` 字段（各来源详情）
-- Agent 建议：调用现有 AI 接口或静态 mock（hackathon 阶段），文案由前端 hardcode 兜底
+**视觉（Arcade 主题，与抠门大王一致）：**
+- 背景：4列图片瀑布流 + `rgba(10,10,10,0.75)` 遮罩（图片用现有 `src/assets/` 内容或占位色块）
+- 中心：花爪 logo + 标语「在龙华·花得值」（`#ffdd00` flicker 动画）
+- 底部：同款滑动解锁轨道
+- CRT 扫描线伪元素（与抠门大王统一实现）
 
 **文件：**
-- 修改：`frontend/src/views/PointsView.vue`（保留现有结构，追加 3 个新区块）
-- 修改：`frontend/src/api/client.ts`（可选：扩展 `myPoints` 响应类型）
+- 创建：`src/Onboarding.jsx`（替换现有占位 Onboarding.jsx，内容完全重写）
+- 修改：`src/App.jsx`（mount 检查逻辑）
+
+### 3.2 花爪全局 UI Arcade 化
+
+**目标：** 花爪视觉语言与抠门大王 Arcade 主题一致。不改业务逻辑，只改样式。
+
+**色彩系统替换（`src/index.css` CSS 变量）：**
+
+| 当前变量 | 当前值 | 替换为 |
+|---------|-------|-------|
+| `--bg-dark` | `#050505` | `#0a0a0a`（arcade-black） |
+| `--accent-blue` | `#2563eb` | `#ffdd00`（arcade-gold） |
+| `--accent-purple` | `#7c3aed` | `#00ff88`（arcade-green） |
+| `--accent-pink` | `#db2777` | `#ff4444`（arcade-red） |
+| `--glass-bg` | `rgba(255,255,255,0.03)` | `rgba(255,221,0,0.03)`（arcade-dim tint） |
+| `--glass-border` | `rgba(255,255,255,0.08)` | `rgba(51,51,0,0.8)`（arcade-border） |
+
+**字体替换（`src/index.css`）：**
+- 正文字体：`Courier New, monospace`（移除 Outfit）
+- 标题字体：引入 `ZCOOL QingKe HuangYou`（与抠门大王一致），替换 Playfair Display
+- Orbitron 字体用于数字统计（`.stat-number`）
+
+**组件样式（全局 class 调整）：**
+- `.glass-panel` → 改为 Arcade card 样式：`background:#1a1a00; border:1px solid #333300; border-radius:4px`
+- `.btn-primary` → 改为 arcade 按钮：`border:1px solid #ffdd00; color:#ffdd00; background:transparent; font-family:monospace`，悬停填充金色
+- `.text-gradient` → 改为纯金色 `#ffdd00` + flicker 动画
+- 保留所有 Framer Motion 动画，仅改颜色参数
+
+**CRT 扫描线（`src/index.css`）：**
+```css
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+  );
+  animation: scanline 8s linear infinite;
+}
+@keyframes scanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100vh; }
+}
+```
+
+**地图聚类颜色（`src/mapData.js`）：**
+- Cluster A：`#ffdd00`（arcade-gold，原橙色）
+- Cluster B：`#00ff88`（arcade-green，原紫色）
+- Cluster C：`#4488ff`（arcade-blue，保留）
+- Cluster D：`#ff4444`（arcade-red，原绿色）
+
+**文件：**
+- 主改：`src/index.css`（CSS 变量 + 字体 + 全局 class + CRT）
+- 小改：`src/mapData.js`（cluster 颜色）
+- 按需：`src/App.css`、`src/HomePage.css` 等各页面 CSS（如有 hardcode 颜色需同步）
 
 ---
 
-## 3. 技术规格
+## 4. 技术约束
 
-### 3.1 开发约束
-- **Worktree 开发：** 在 `feature/teammate-ui-integration` 分支的 worktree 中进行
-- **不修改后端：** PointsAlliance Agent 建议在 hackathon 阶段用 mock 数据，不改后端
-- **不破坏现有页面：** 仅新增 OnboardingView，修改 PointsView（追加，不删除现有功能）
-- **Arcade 主题严格一致：** 使用 `globals.css` 中已有的 class，不引入新的颜色变量
+- **两个项目均在 Worktree 中开发**
+  - 抠门大王：`git worktree add .worktrees/teammate-ui -b feature/teammate-ui-integration`
+  - 花爪：`git worktree add .worktrees/ui-arcade -b feature/ui-arcade-theme`
+- **不改业务逻辑**，只改视觉层
+- **花爪 CSS 改动用 `replace_all_matching_properties` 方式处理跨文件颜色**，不打补丁
 
-### 3.2 Worktree 操作
+### lint + build
 ```bash
-cd /d/projects/抠门大王
-git worktree add .worktrees/teammate-ui -b feature/teammate-ui-integration
+# 抠门大王前端
+cd .worktrees/teammate-ui/frontend && npm run lint && npm run build
+
+# 花爪
+cd .worktrees/ui-arcade && npm run lint && npm run build
 ```
 
-### 3.3 lint + build 验证
-```bash
-# 前端
-cd .worktrees/teammate-ui/frontend
-npm run lint && npm run build
-```
+### Playwright E2E 验收（两个项目都走）
 
-### 3.4 Playwright E2E 验收标准
+**Onboarding（两项目共同）：**
+- 桌面（1280×800）+ 移动（390×844）：滑动解锁完整流程、跳过按钮、完成后不再出现
+- 边界：localStorage 已设时直接进主界面
 
-**OnboardingView：**
-- 桌面端（1280×800）：页面加载正常，跳过按钮可点，滑块可拖至底，触发跳转
-- 移动端（390×844）：触摸滑动解锁完整流程
-- 边界：`localStorage['onboarding_done']` = true 时，访问 `/` 不再弹出 Onboarding
-- 边界：直接访问 `/onboarding` 时不崩溃
+**抠门大王 PointsView：**
+- 桌面+移动：三个新区块正常显示，折叠交互，Agent 建议按钮触发跳转
+- 回归：原积分余额、兑换渠道功能不受影响
 
-**PointsView 增强：**
-- 桌面端 + 移动端：积分汇总卡正常展示，折叠/展开交互
-- 预警标签显示（mock 数据）
-- Agent 建议区块展示，「一键执行」按钮点击后触发对应操作（跳转或创建挑战）
-- 原有积分余额、兑换渠道功能不回归
-
----
-
-## 4. 花爪（hackathon-project）
-
-队员设计中**无花爪相关内容**，此次集成不涉及花爪项目。
+**花爪 UI 一致性：**
+- 各页面主色 `#ffdd00` 正确渲染（无遗留蓝/紫色）
+- CRT 扫描线可见
+- Arcade 卡片样式无错位、文字无挤压
+- 地图 cluster 颜色正确
+- 全页面交互流程完整走一遍（情绪测试→结果→地图→积分→个人中心）
 
 ---
 
 ## 5. 不在范围内
 
-- 抠门大王后端改动（除 myPoints 响应字段类型注解外）
-- 其他 6 个重叠页面的 UI 重设计
-- 花爪项目任何修改
-- 设计语言向暖橙色系迁移
+- 抠门大王后端改动
+- 花爪接入任何新 API
+- 抠门大王其余 6 个重叠页面 UI 重设计
