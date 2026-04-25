@@ -156,6 +156,13 @@
         </div>
 
         <button
+          @click="handleOpenHuaclawMapEmotion(route)"
+          class="btn-arcade text-sm w-full justify-center mt-2"
+          style="border-color:rgba(16,185,129,0.5);color:#10b981;background:transparent;"
+        >
+          🗺 花爪地图打卡
+        </button>
+        <button
           @click="handleCheckin(ri)"
           :disabled="checkedIn.has(ri) || checkingIn"
           class="mt-3 w-full text-xs py-2 rounded border transition-colors"
@@ -179,6 +186,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { openInHuaclawMap, type KoumenRoute } from '../composables/useHuaclawMap';
 import { useAuthStore } from '../stores/auth.store';
 import { api } from '../api/client';
 
@@ -329,6 +337,25 @@ async function handleCheckin(idx: number) {
   } finally {
     checkingIn.value = false;
   }
+}
+
+function handleOpenHuaclawMapEmotion(route: EmotionRoute) {
+  const stops = route.stops.map((stop, i) => ({
+    seq: i + 1,
+    time: stop.time,
+    name: stop.recommended_shops?.[0]?.name ?? stop.place,
+    activity: stop.activity,
+    cost: stop.estimated_cost,
+    address: stop.recommended_shops?.[0]?.address ?? undefined,
+  }));
+
+  const kr: KoumenRoute = {
+    type: 'emotion',
+    title: route.title,
+    totalCost: route.total_cost,
+    stops,
+  };
+  openInHuaclawMap(kr);
 }
 
 function resetQuiz() {
