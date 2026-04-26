@@ -1,10 +1,57 @@
+/* ── Night theme (default) ── */
+:root {
+  --arcade-black:     #0a0a0a;
+  --arcade-dim:       #1a1a00;
+  --arcade-border:    #333300;
+  --arcade-gold:      #ffdd00;
+  --arcade-gold-rgb:  255,221,0;
+  --arcade-green:     #00ff88;
+  --arcade-green-rgb: 0,255,136;
+  --arcade-red:       #ff4444;
+  --arcade-blue:      #4488ff;
+  --arcade-muted:     #888844;
+  --arcade-text:      #ffffff;
+}
+
+/* ── Day theme ── */
+[data-theme="light"] {
+  --arcade-black:     #fffbf0;
+  --arcade-dim:       #fff8e0;
+  --arcade-border:    #e5c520;
+  --arcade-gold:      #d4a800;
+  --arcade-gold-rgb:  212,168,0;
+  --arcade-green:     #00995c;
+  --arcade-green-rgb: 0,153,92;
+  --arcade-red:       #cc2200;
+  --arcade-blue:      #0055cc;
+  --arcade-muted:     #a07800;
+  --arcade-text:      #1a1400;
+}
+
+/* ── Night-only effects: disable in day mode ── */
+[data-theme="light"] body::after { display: none; }
+[data-theme="light"] .shadow-neon,
+[data-theme="light"] .shadow-gold,
+[data-theme="light"] .shadow-green { box-shadow: none !important; }
+[data-theme="light"] .animate-flicker { animation: none; }
+[data-theme="light"] .neon-text { text-shadow: none; }
+
+/* ThemeToggle fixed positioning */
+.theme-toggle-wrapper {
+  position: fixed;
+  top: max(env(safe-area-inset-top, 0px), 12px);
+  right: 12px;
+  z-index: 50;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-arcade-black text-white font-mono overflow-x-hidden;
+    @apply bg-arcade-black font-mono overflow-x-hidden;
+    color: var(--arcade-text);
   }
 
   body::after {
@@ -34,7 +81,7 @@
   }
 
   .card-arcade:hover {
-    @apply border-arcade-gold/40;
+    border-color: rgba(var(--arcade-gold-rgb), 0.4);
   }
 
   .task-badge-main  { @apply border-l-4 border-arcade-green; }
