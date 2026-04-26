@@ -68,12 +68,11 @@
            tracking-widest uppercase transition-all duration-200
            hover:bg-arcade-gold hover:text-arcade-black hover:shadow-neon
            active:scale-95;
-    box-shadow: 0 0 0 rgba(255,221,0,0);
-    transition: all 0.2s;
+    box-shadow: 0 0 0 rgba(var(--arcade-gold-rgb), 0);
   }
 
   .btn-arcade:hover {
-    box-shadow: 0 0 20px rgba(255,221,0,0.5), inset 0 0 20px rgba(255,221,0,0.05);
+    box-shadow: 0 0 20px rgba(var(--arcade-gold-rgb), 0.5), inset 0 0 20px rgba(var(--arcade-gold-rgb), 0.05);
   }
 
   .card-arcade {
